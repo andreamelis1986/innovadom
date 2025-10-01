@@ -1,0 +1,95 @@
+<div class="layout-container" [class.collapsed]="isCollapsed">
+
+    <!-- Topbar -->
+    <header class="topbar" [class.hidden]="isCollapsed">
+        <div class="topbar-left">
+            <div class="logo">DomusControl</div>
+            <nav class="nav">
+                <button class="nav-btn active">Mappa</button>
+                <button class="nav-btn">Dispositivi</button>
+                <button class="nav-btn">Scene</button>
+                <button class="nav-btn">Routine</button>
+            </nav>
+        </div>
+
+        <div class="topbar-right">
+            <button class="icon-btn">🏠</button>
+            <button class="icon-btn">➕</button>
+            <button class="icon-btn">👤</button>
+            <button class="icon-btn">⚙️</button>
+
+            <!-- Pulsante toggle -->
+            <button class="icon-btn toggle-bars" (click)="isCollapsed = !isCollapsed">
+                <span *ngIf="!isCollapsed">⮜</span>
+                <span *ngIf="isCollapsed">⮞</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Layout principale -->
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="left" *ngIf="!isCollapsed">
+            <div class="brand">DomusControl</div>
+
+            <div class="panel">
+                <div class="panel-title">Piano</div>
+                <div class="segmented">
+                    <button class="seg active">2D</button>
+                    <button class="seg">3D</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Stanze</div>
+                <select [(ngModel)]="selectedRoom" class="select" disabled>
+                    <option *ngFor="let r of rooms" [value]="r">{{ r }}</option>
+                </select>
+                <ul class="room-list">
+                    <li *ngFor="let r of rooms" (click)="selectedRoom=r" [class.active]="selectedRoom===r">
+                        {{ r }}
+                    </li>
+                </ul>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Home Status</div>
+                <div class="stat">
+                    <div>Luci</div>
+                    <div class="val">{{ homeStatus.lightsOn }} On</div>
+                </div>
+                <div class="stat">
+                    <div>Temperatura</div>
+                    <div class="val">{{ homeStatus.temperature }} °C</div>
+                </div>
+                <div class="stat">
+                    <div>Energia</div>
+                    <div class="val">{{ homeStatus.energyKwh }} kWh</div>
+                </div>
+                <div class="stat">
+                    <div>Telecamere</div>
+                    <div class="val">{{ homeStatus.camerasOn }} On</div>
+                </div>
+            </div>
+
+            <div class="panel actions">
+                <div class="panel-title">Scorciatoie</div>
+                <button class="action">Movie Time</button>
+                <button class="action">Workout</button>
+                <button class="action">Party</button>
+            </div>
+        </aside>
+
+        <!-- Centro -->
+        <main class="center">
+            <div class="map-wrap">
+                <img class="map" src="assets/planimetria_modern_5.png" alt="Plan" />
+                <div *ngFor="let dev of filteredDevices" class="icon" [ngClass]="[dev.type, dev.status ? 'on' : 'off']"
+                    [style.left.%]="dev.x" [style.top.%]="dev.y" (click)="toggleDevice(dev)" [title]="dev.name">
+                    {{ iconFor(dev.type) }}
+                    <div class="pulse" *ngIf="dev.status"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
