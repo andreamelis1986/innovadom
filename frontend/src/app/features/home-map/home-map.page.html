@@ -1,66 +1,70 @@
-<div class="layout-container" [class.collapsed]="isCollapsed">
-  <!-- Topbar -->
+<div class="app-container">
+  <!-- Barra superiore -->
   <header class="topbar">
-    <div class="topbar-left" *ngIf="!isCollapsed">
-      <div class="logo">DomusControl</div>
-      <nav class="nav">
-        <button class="nav-btn active">Mappa</button>
-        <button class="nav-btn">Dispositivi</button>
-        <button class="nav-btn">Scene</button>
-        <button class="nav-btn">Routine</button>
-      </nav>
+    <div class="logo">🏠 DomusControl</div>
+    <nav class="menu">
+      <a href="#">Mappa</a>
+      <a href="#">Dispositivi</a>
+      <a href="#">Scene</a>
+      <a href="#">Routine</a>
+    </nav>
+    <div class="datetime">
+      <span class="time">{{ currentTime }}</span>
+      <span class="date">{{ currentDate }}</span>
     </div>
-
-    <div class="topbar-right">
-      <button class="icon-btn">🏠</button>
-      <button class="icon-btn">➕</button>
-      <button class="icon-btn">👤</button>
-      <button class="icon-btn">⚙️</button>
-      <button class="icon-btn toggle-bars" (click)="isCollapsed = !isCollapsed">
-        <span *ngIf="isCollapsed">⮞</span>
-        <span *ngIf="!isCollapsed">⮜</span>
-      </button>
+    <div class="actions">
+      <i class="fas fa-bell"></i>
+      <i class="fas fa-user"></i>
+      <i class="fas fa-cog"></i>
     </div>
   </header>
 
-  <!-- Layout principale -->
-  <div class="layout">
+  <!-- Contenuto -->
+  <main class="content">
+    <!-- Mappa -->
+    <div class="map-container">
+      <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
+
+      <!-- Icone dispositivi -->
+      <ng-container *ngFor="let device of devices">
+        <div class="device-icon" [ngStyle]="{top: device.top, left: device.left}">
+          <i *ngIf="device.type === 'light'" class="fas fa-lightbulb"></i>
+          <i *ngIf="device.type === 'ac'" class="fas fa-snowflake"></i>
+          <i *ngIf="device.type === 'camera'" class="fas fa-video"></i>
+        </div>
+      </ng-container>
+    </div>
+
     <!-- Sidebar -->
-    <aside class="left" *ngIf="!isCollapsed">
-      <div class="panel">
-        <div class="panel-title">Home Status</div>
-        <div class="stat"><div>Luci</div><div class="val">{{ homeStatus.lightsOn }} On</div></div>
-        <div class="stat"><div>Temperatura</div><div class="val">{{ homeStatus.temperature }} °C</div></div>
-        <div class="stat"><div>Energia</div><div class="val">{{ homeStatus.energyKwh }} kWh</div></div>
-        <div class="stat"><div>Telecamere</div><div class="val">{{ homeStatus.camerasOn }} On</div></div>
+    <aside class="sidebar">
+      <div class="card">
+        <h3><i class="fas fa-thermometer-half"></i> Temperatura</h3>
+        <div class="value">{{ temperature }} °C</div>
       </div>
 
-      <div class="panel actions">
-        <div class="panel-title">Scorciatoie</div>
-        <button class="action">Movie Time</button>
-        <button class="action">Workout</button>
-        <button class="action">Party</button>
+      <div class="card">
+        <h3><i class="fas fa-bolt"></i> Energia</h3>
+        <div class="value">{{ energy }} kWh</div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-lightbulb"></i> Luci</h3>
+        <div class="value">{{ lights }} On</div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-video"></i> Telecamere</h3>
+<div class="value">{{ cameras }} On</div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-magic"></i> Scorciatoie</h3>
+        <div class="shortcuts">
+          <button>Movie Time</button>
+          <button>Workout</button>
+          <button>Party</button>
+        </div>
       </div>
     </aside>
-
-    <!-- Centro -->
-    <main class="center">
-      <div class="map-wrap">
-        <img class="map" src="assets/planimetria_modern_5.png" alt="Plan" />
-        
-        <ng-container *ngFor="let dev of devices">
-          <div 
-            class="icon" 
-            [ngClass]="[dev.type, dev.status ? 'on' : 'off']"
-            [style.left.%]="dev.xPct"
-            [style.top.%]="dev.yPct"
-            (click)="toggleDevice(dev)"
-            [title]="dev.name">
-            {{ iconFor(dev.type) }}
-            <div class="pulse" *ngIf="dev.status"></div>
-          </div>
-        </ng-container>
-      </div>
-    </main>
-  </div>
+  </main>
 </div>
