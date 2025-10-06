@@ -1,70 +1,43 @@
-<div class="app-container">
-  <!-- Barra superiore -->
-  <header class="topbar">
-    <div class="logo">🏠 DomusControl</div>
-    <nav class="menu">
-      <a href="#">Mappa</a>
-      <a href="#">Dispositivi</a>
-      <a href="#">Scene</a>
-      <a href="#">Routine</a>
-    </nav>
-    <div class="datetime">
-      <span class="time">{{ currentTime }}</span>
-      <span class="date">{{ currentDate }}</span>
+<!-- Barra Superiore -->
+<div class="topbar">
+    <div class="topbar-left">
+        <i class="fas fa-house-user logo-icon"></i>
+        <span class="logo-text"> DomusControl</span>
     </div>
-    <div class="actions">
-      <i class="fas fa-bell"></i>
-      <i class="fas fa-user"></i>
-      <i class="fas fa-cog"></i>
-    </div>
-  </header>
 
-  <!-- Contenuto -->
-  <main class="content">
+    <div class="topbar-right">
+        <div class="datetime">
+            <span class="time">{{ currentTime }}</span>
+            <span class="date">{{ currentDate }}</span>
+        </div>
+        <i class="fas fa-bell notification-icon"></i>
+        <i class="fas fa-user-circle user-icon"></i>
+    </div>
+</div>
+
+<!-- Contenitore principale -->
+<div class="dashboard-container">
     <!-- Mappa -->
     <div class="map-container">
-      <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
+        <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
 
-      <!-- Icone dispositivi -->
-      <ng-container *ngFor="let device of devices">
-        <div class="device-icon" [ngStyle]="{top: device.top, left: device.left}">
-          <i *ngIf="device.type === 'light'" class="fas fa-lightbulb"></i>
-          <i *ngIf="device.type === 'ac'" class="fas fa-snowflake"></i>
-          <i *ngIf="device.type === 'camera'" class="fas fa-video"></i>
+        <div *ngFor="let device of devices" class="device-icon" [ngClass]="device.type"
+            [class.on]="device.status === 'on'" [style.top]="device.top" [style.left]="device.left"
+            (click)="toggleDevice(device)">
+            <i [ngClass]="device.icon"></i>
         </div>
-      </ng-container>
     </div>
 
     <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="card">
-        <h3><i class="fas fa-thermometer-half"></i> Temperatura</h3>
-        <div class="value">{{ temperature }} °C</div>
-      </div>
-
-      <div class="card">
-        <h3><i class="fas fa-bolt"></i> Energia</h3>
-        <div class="value">{{ energy }} kWh</div>
-      </div>
-
-      <div class="card">
-        <h3><i class="fas fa-lightbulb"></i> Luci</h3>
-        <div class="value">{{ lights }} On</div>
-      </div>
-
-      <div class="card">
-        <h3><i class="fas fa-video"></i> Telecamere</h3>
-<div class="value">{{ cameras }} On</div>
-      </div>
-
-      <div class="card">
-        <h3><i class="fas fa-magic"></i> Scorciatoie</h3>
-        <div class="shortcuts">
-          <button>Movie Time</button>
-          <button>Workout</button>
-          <button>Party</button>
+    <div class="sidebar">
+        <div class="info-card" *ngFor="let item of infoCards">
+            <div class="icon-container" [style.background]="item.color + '33'">
+                <i [class]="item.icon" [style.color]="item.color"></i>
+            </div>
+            <div class="info-details">
+                <h4>{{ item.title }}</h4>
+                <p>{{ item.value }}</p>
+            </div>
         </div>
-      </div>
-    </aside>
-  </main>
+    </div>
 </div>

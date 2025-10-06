@@ -1,164 +1,210 @@
-/* Layout generale */
-.app-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: #1e1e1e;
-  color: #fff;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-/* Barra superiore */
+/* === BARRA SUPERIORE === */
 .topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #2a2a2a;
-  padding: 0.8rem 1.5rem;
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    backdrop-filter: blur(12px);
+    background: rgba(25, 28, 33, 0.85);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 25px;
+    z-index: 1000;
 }
 
-.topbar .logo {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #00d8ff;
+.logo-icon {
+    font-size: 22px;
+    color: #00bcd4;
 }
 
-.topbar .menu a {
-  margin: 0 10px;
-  text-decoration: none;
-  color: #ccc;
-  transition: color 0.3s;
+.logo-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
 }
 
-.topbar .menu a:hover {
-  color: #00d8ff;
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
-.topbar .datetime {
-  text-align: right;
+.datetime {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.1;
 }
 
-.topbar .time {
-  font-size: 1.2rem;
-  display: block;
-  font-weight: bold;
+.time {
+    font-size: 16px;
+    font-weight: 600;
+    color: #00bcd4;
 }
 
-.topbar .date {
-  font-size: 0.8rem;
-  color: #bbb;
+.date {
+    font-size: 12px;
+    color: #ccc;
 }
 
-.topbar .actions i {
-  margin-left: 15px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  color: #ccc;
-  transition: color 0.3s;
+.notification-icon,
+.user-icon {
+    font-size: 20px;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.3s;
 }
 
-.topbar .actions i:hover {
-  color: #00d8ff;
+.notification-icon:hover,
+.user-icon:hover {
+    color: #00bcd4;
 }
 
-/* Contenuto principale */
-.content {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
+/* === DASHBOARD === */
+.dashboard-container {
+    display: flex;
+    height: calc(100vh - 60px);
+    margin-top: 60px;
+    background: #1b1f25;
+    color: #fff;
+    overflow: hidden;
 }
 
-/* Mappa */
+/* === MAPPA === */
+/* CONTENITORE MAPPA */
 .map-container {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
+    position: relative;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+    user-select: none;
 }
 
+/* MAPPA NON CLICCABILE */
 .map-image {
-  max-width: 90%;
-  max-height: 90%;
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+    /* Disattiva click sulla mappa */
+    border-radius: 20px;
+    display: block;
 }
 
-/* Icone dispositivi sulla mappa */
+/* ICONA DISPOSITIVO */
 .device-icon {
-  position: absolute;
-  font-size: 1.5rem;
-  color: #00d8ff;
-  text-shadow: 0 0 8px rgba(0, 216, 255, 0.7);
-  transform: translate(-50%, -50%);
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0.9;
 }
 
-/* Sidebar */
+/* Stato OFF */
+.device-icon i {
+    color: #4e5b68;
+    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.4));
+}
+
+/* Hover */
+.device-icon:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* Stato ON - effetto pulsazione */
+.device-icon.on i {
+    transform: scale(1.15);
+    animation: pulse 2s infinite;
+}
+
+/* COLORI TIPOLOGIA */
+.device-icon.light.on i {
+    color: #ffeb3b;
+    filter: drop-shadow(0 0 10px rgba(255, 235, 59, 0.8));
+}
+
+.device-icon.climate.on i {
+    color: #00bcd4;
+    filter: drop-shadow(0 0 10px rgba(0, 188, 212, 0.9));
+}
+
+.device-icon.camera.on i {
+    color: #9c27b0;
+    filter: drop-shadow(0 0 10px rgba(156, 39, 176, 0.9));
+}
+
+/* ANIMAZIONE PULSANTE */
+@keyframes pulse {
+    0% {
+        filter: drop-shadow(0 0 5px currentColor);
+        transform: scale(1.1);
+    }
+
+    50% {
+        filter: drop-shadow(0 0 15px currentColor);
+        transform: scale(1.25);
+    }
+
+    100% {
+        filter: drop-shadow(0 0 5px currentColor);
+        transform: scale(1.1);
+    }
+}
+
+/* === SIDEBAR === */
 .sidebar {
-  width: 280px;
-  padding: 1rem;
-  background: #1e1e1e;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  overflow-y: auto;
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
+    width: 280px;
+    padding: 15px 25px;
+    background: #20242b;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    box-shadow: -2px 0 15px rgba(0, 0, 0, 0.4);
+    overflow-y: auto;
 }
 
-/* Card */
-.card {
-  background: #2a2a2a;
-  border-radius: 16px;
-  padding: 1rem 1.2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* CARD MODERNE */
+.info-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: transform 0.2s, background 0.2s;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+.info-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
 }
 
-.card h3 {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin: 0 0 0.3rem 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #00d8ff;
+.icon-container {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.card .value {
-  font-size: 1.2rem;
-  font-weight: 500;
-  margin-left: 1.5rem;
-  color: #fff;
+.info-details h4 {
+    margin: 0;
+    font-size: 14px;
+    color: #fff;
+    font-weight: 600;
 }
 
-/* Scorciatoie */
-.shortcuts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.shortcuts button {
-  background: #00d8ff;
-  border: none;
-  border-radius: 20px;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #0d1117;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.shortcuts button:hover {
-  background: #00aacc;
-  color: #fff;
+.info-details p {
+    margin: 0;
+    font-size: 13px;
+    color: #ccc;
 }
