@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { WebSocketServer } = require('ws');
+const huaweiRoutes = require("./routes/huawei");
 
 const app = express();
 app.use(cors());
@@ -9,6 +10,7 @@ app.use(express.json());
 // Importa le rotte (Shelly + DB)
 const shellyRoutes = require('./routes/shelly');
 app.use('/api', shellyRoutes);
+app.use("/api/huawei", huaweiRoutes);
 
 // Avvio HTTP
 const PORT = 3000;

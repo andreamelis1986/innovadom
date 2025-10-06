@@ -1,0 +1,25 @@
+.fotovoltaico-card {
+  background: #1e1e1e;
+  color: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+
+  h2 {
+    margin-bottom: 16px;
+    font-size: 1.4rem;
+    color: #ffd54f;
+  }
+
+  .stat {
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+  }
+}
+
+.loading {
+  color: #999;
+  text-align: center;
+  padding: 20px;
+}

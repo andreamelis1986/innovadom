@@ -1,0 +1,48 @@
+<!-- 🔹 Barra superiore (uguale alla dashboard) -->
+<div class="topbar">
+  <div class="topbar-left">
+    <i class="fas fa-house-user logo-icon"></i>
+    <span class="logo-text">DomusControl</span>
+  </div>
+
+  <nav class="menu-center">
+    <a routerLink="/home" class="menu-item">Dashboard</a>
+    <a routerLink="/stanze" class="menu-item">Stanze</a>
+    <a routerLink="/dispositivi" class="menu-item">Dispositivi</a>
+    <a routerLink="/energia" class="menu-item">Energia</a>
+    <a routerLink="/report" class="menu-item">Report</a>
+    <a routerLink="/videocamera" class="menu-item active">Videocamera</a>
+  </nav>
+
+  <div class="topbar-right">
+    <i class="fas fa-envelope message-icon"></i>
+    <i class="fas fa-bell notification-icon"></i>
+    <div class="user-profile">
+      <img src="assets/foto_profilo_andrea.jpg" alt="User" class="profile-pic" />
+      <span class="username">Andrea</span>
+    </div>
+  </div>
+</div>
+
+<!-- 🔹 Contenuto principale -->
+<div class="video-grid-container">
+  <div class="video-grid">
+    <div class="video-card" *ngFor="let cam of cameras">
+      <div class="video-header">
+        <i class="fas fa-video camera-icon"></i>
+        <span>{{ cam.name }}</span>
+        <span class="status" [class.online]="cam.online" [class.offline]="!cam.online">
+          {{ cam.online ? 'Online' : 'Offline' }}
+        </span>
+      </div>
+
+      <div class="video-body">
+        <video *ngIf="cam.streamUrl && cam.online" [src]="cam.streamUrl" autoplay muted controls></video>
+        <div *ngIf="!cam.streamUrl || !cam.online" class="video-placeholder">
+          <i class="fas fa-video-slash"></i>
+          <p>Nessun segnale</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

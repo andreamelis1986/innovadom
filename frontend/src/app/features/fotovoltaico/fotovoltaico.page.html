@@ -1,0 +1,20 @@
+<div class="fotovoltaico-card" *ngIf="!loading">
+  <h2>☀️ Fotovoltaico</h2>
+
+  <div class="stat">
+    <strong>Batteria:</strong> {{ data.soc }}%
+  </div>
+  <div class="stat">
+    <strong>Produzione FV:</strong> {{ data.pvPower }} W
+  </div>
+  <div class="stat">
+    <strong>Scambio con rete:</strong> {{ data.gridPower }} W
+  </div>
+  <div class="stat">
+    <strong>Flusso batteria:</strong> {{ data.batteryPower }} W
+  </div>
+</div>
+
+<div *ngIf="loading" class="loading">
+  <p>Caricamento dati dal sistema Huawei...</p>
+</div>

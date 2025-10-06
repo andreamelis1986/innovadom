@@ -1,43 +1,120 @@
-<!-- Barra Superiore -->
+<!-- 🔹 Barra Superiore Moderna -->
 <div class="topbar">
-    <div class="topbar-left">
-        <i class="fas fa-house-user logo-icon"></i>
-        <span class="logo-text"> DomusControl</span>
-    </div>
+  <!-- Logo -->
+  <div class="topbar-left">
+    <i class="fas fa-house-user logo-icon"></i>
+    <span class="logo-text">DomusControl</span>
+  </div>
 
-    <div class="topbar-right">
-        <div class="datetime">
-            <span class="time">{{ currentTime }}</span>
-            <span class="date">{{ currentDate }}</span>
-        </div>
-        <i class="fas fa-bell notification-icon"></i>
-        <i class="fas fa-user-circle user-icon"></i>
+  <!-- Menu centrale -->
+  <nav class="menu-center">
+    <a href="#" class="menu-item active">Dashboard</a>
+    <a href="#" class="menu-item">Stanze</a>
+    <a href="#" class="menu-item">Dispositivi</a>
+    <a href="#" class="menu-item">Energia</a>
+     <a href="\videocamera" class="menu-item">videocamera</a>
+    <a href="#" class="menu-item">Report</a>
+  </nav>
+
+  <!-- Icone utente -->
+  <div class="topbar-right">
+    <i class="fas fa-envelope message-icon"></i>
+    <i class="fas fa-bell notification-icon"></i>
+    <div class="user-profile">
+      <img src="assets/foto_profilo_andrea.jpg" alt="User" class="profile-pic" />
+      <span class="username">Andrea</span>
     </div>
+  </div>
 </div>
 
-<!-- Contenitore principale -->
+
+<!-- 🔹 Contenitore principale -->
 <div class="dashboard-container">
-    <!-- Mappa -->
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="info-card" 
+         *ngFor="let item of infoCards" 
+         (click)="toggleCard(item)"
+         [class.expanded]="item.expanded">
+
+      <div class="card-header">
+        <div class="icon-container" [style.background]="item.color + '33'">
+          <i [class]="item.icon" [style.color]="item.color"></i>
+        </div>
+        <div class="title">{{ item.title }}</div>
+        <div class="value">{{ item.value }}</div>
+      </div>
+
+      <!-- Card espansa -->
+      <div class="card-expanded" *ngIf="item.expanded">
+        
+        <!-- 🔸 Luci -->
+        <ng-container *ngIf="item.title === 'Luci'">
+          <div class="card-control-row lights-row">
+            <span class="label">Tutte le luci</span>
+            <label class="switch" (click)="$event.stopPropagation()">
+              <input 
+                type="checkbox" 
+                [checked]="areAllLightsOn()" 
+                (change)="toggleAllLights()" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </ng-container>
+
+        <!-- 🔸 Temperatura -->
+        <ng-container *ngIf="item.title === 'Temperatura'">
+          <div class="card-control-row temperature-row">
+            <button class="action-btn small"
+              (click)="changeTemperature(-1); $event.stopPropagation()">−</button>
+            <span class="temp-value">{{ currentTemperature }}°C</span>
+            <button class="action-btn small"
+              (click)="changeTemperature(1); $event.stopPropagation()">+</button>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔹 MAPPA -->
+  <div class="map-wrapper">
     <div class="map-container">
-        <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
+      <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
 
-        <div *ngFor="let device of devices" class="device-icon" [ngClass]="device.type"
-            [class.on]="device.status === 'on'" [style.top]="device.top" [style.left]="device.left"
-            (click)="toggleDevice(device)">
-            <i [ngClass]="device.icon"></i>
-        </div>
+      <!-- 🔸 Dispositivi sulla mappa -->
+      <div *ngFor="let device of devices" 
+           class="device-icon" 
+           [ngClass]="device.type"
+           [class.on]="device.status === 'on'" 
+           [style.top]="device.top" 
+           [style.left]="device.left"
+           (click)="device.type === 'camera' ? openCamera(device) : toggleDevice(device)">
+        <i [ngClass]="device.icon"></i>
+      </div>
     </div>
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="info-card" *ngFor="let item of infoCards">
-            <div class="icon-container" [style.background]="item.color + '33'">
-                <i [class]="item.icon" [style.color]="item.color"></i>
-            </div>
-            <div class="info-details">
-                <h4>{{ item.title }}</h4>
-                <p>{{ item.value }}</p>
-            </div>
+    <!-- 🔹 Riquadro video live -->
+    <div class="camera-popup" *ngIf="selectedCamera">
+      <div class="popup-header">
+        <span>{{ selectedCamera.title || 'Telecamera Live' }}</span>
+        <button class="close-btn" (click)="closeCamera()">✕</button>
+      </div>
+      <div class="popup-content">
+        <!-- Se hai un vero flusso RTSP/HTTP, metti l’URL -->
+        <video *ngIf="selectedCamera.streamUrl" 
+               [src]="selectedCamera.streamUrl" 
+               autoplay 
+               controls 
+               muted></video>
+
+        <!-- Segnaposto -->
+        <div *ngIf="!selectedCamera.streamUrl" class="video-placeholder">
+          <i class="fas fa-video"></i>
+          <p>Streaming non disponibile</p>
         </div>
+      </div>
     </div>
+
+  </div>
 </div>
