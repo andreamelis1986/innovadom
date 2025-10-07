@@ -124,4 +124,63 @@ router.post('/devices/:id/shutter/position', async (req, res) => {
   }
 });
 
+router.put('/devices/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, type, ip, status, position, top, left } = req.body;
+
+  const sql = `
+    UPDATE devices
+    SET
+      name      = COALESCE(?, name),
+      type      = COALESCE(?, type),
+      ip        = COALESCE(?, ip),
+      status    = COALESCE(?, status),
+      position  = COALESCE(?, position),
+      top       = COALESCE(?, top),
+      \`left\`   = COALESCE(?, \`left\`)
+    WHERE id = ?`;
+
+  const params = [
+    name ?? null,
+    type ?? null,
+    ip ?? null,
+    status ?? null,
+    position ?? null,
+    top ?? null,
+    left ?? null,
+    id
+  ];
+
+  db.query(sql, params, (err) => {
+    if (err) {
+      console.error('❌ Errore UPDATE:', err);
+      return res.status(500).json({ error: err.message });
+    }
+
+    db.query('SELECT * FROM devices WHERE id = ?', [id], (err2, rows) => {
+      if (err2) return res.status(500).json({ error: err2.message });
+      res.json(rows[0]);
+    });
+  });
+});
+
+router.post('/devices', (req, res) => {
+  const { name, type, ip, status = 'off', position = 0, top = 0, left = 0 } = req.body;
+
+  const sql = `
+    INSERT INTO devices (name, type, ip, status, position, top, \`left\`)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+  db.query(sql, [name, type, ip, status, position, top, left], (err, result) => {
+    if (err) {
+      console.error('❌ Errore INSERT device:', err);
+      return res.status(500).json({ error: err.message });
+    }
+
+    const newDevice = { id: result.insertId, name, type, ip, status, position, top, left };
+    console.log('✅ Nuovo dispositivo aggiunto:', newDevice);
+    res.json(newDevice);
+  });
+});
+
 module.exports = router;

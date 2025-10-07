@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSliderModule } from '@angular/material/slider';
-import { DevicesService } from '../../services/devices.service';
+import { DeviceService } from '../../services/device.service';
 
 @Component({
   standalone: true,
@@ -20,41 +20,27 @@ import { DevicesService } from '../../services/devices.service';
     <h2>Dispositivi</h2>
     <div class="grid">
 
-      <mat-card *ngFor="let d of devicesSvc.devices()">
-        <mat-card-title>{{ d.name }}</mat-card-title>
-        <mat-card-content>
-          Stato: {{ d.state }}
+<mat-card *ngFor="let d of devicesSvc.devices()">
+  <mat-card-title>{{ d.name }}</mat-card-title>
+  <mat-card-content>
+    Stato: {{ d.status }}
 
-          <!-- Se è una serranda mostro anche la % -->
-          <div *ngIf="d.type === 'shutter'">
-            <p>Posizione: {{ d.position ?? 0 }}%</p>
+    <div *ngIf="d.type === 'shutter'">
+      <p>Posizione: {{ d.position ?? 0 }}%</p>
+      <mat-slider min="0" max="100" step="1">
+        <input matSliderThumb [(ngModel)]="d.position"
+               (ngModelChange)="devicesSvc.setPosition(d.id!, $event)">
+      </mat-slider>
+    </div>
+  </mat-card-content>
 
-            <!-- Nuovo MDC slider -->
-            <mat-slider min="0" max="100" step="1">
-              <input matSliderThumb
-                     [(ngModel)]="d.position"
-                     (ngModelChange)="devicesSvc.setPosition(d.id, $event)">
-            </mat-slider>
-          </div>
-        </mat-card-content>
+  <button *ngIf="d.type === 'light'"
+          mat-raised-button color="primary"
+          (click)="devicesSvc.toggleDevice(d.id!)">
+    {{ d.status === 'on' ? 'Spegni' : 'Accendi' }}
+  </button>
+</mat-card>
 
-        <!-- luci -->
-        <button *ngIf="d.type === 'light'"
-                mat-raised-button color="primary"
-                (click)="devicesSvc.toggleDevice(d.id)">
-          {{ d.state === 'on' ? 'Spegni' : 'Accendi' }}
-        </button>
-
-        <!-- serranda -->
-        <div *ngIf="d.type === 'shutter'">
-          <button mat-raised-button color="primary"
-                  (click)="devicesSvc.toggleDevice(d.id, 'up')">Su</button>
-          <button mat-raised-button color="accent"
-                  (click)="devicesSvc.toggleDevice(d.id, 'down')">Giù</button>
-          <button mat-raised-button color="warn"
-                  (click)="devicesSvc.toggleDevice(d.id, 'stop')">Stop</button>
-        </div>
-      </mat-card>
 
     </div>
   `,
@@ -71,10 +57,10 @@ import { DevicesService } from '../../services/devices.service';
   `]
 })
 export class DevicesPage implements OnInit {
-  devicesSvc = inject(DevicesService);
+  devicesSvc = inject(DeviceService);
 
   ngOnInit() {
-    this.devicesSvc.loadDevices();      // carica dal backend
+    this.devicesSvc.loadDevicesFromDB();      // carica dal backend
     this.devicesSvc.connectWebSocket(); // ascolta aggiornamenti live
   }
 }

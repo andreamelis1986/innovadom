@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { WebSocketServer } = require('ws');
 const huaweiRoutes = require("./routes/huawei");
+const deviceRoutes = require('./routes/devices');
 
 const app = express();
 app.use(cors());
@@ -11,6 +12,7 @@ app.use(express.json());
 const shellyRoutes = require('./routes/shelly');
 app.use('/api', shellyRoutes);
 app.use("/api/huawei", huaweiRoutes);
+app.use('/api/devices', deviceRoutes);
 
 // Avvio HTTP
 const PORT = 3000;

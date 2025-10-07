@@ -385,3 +385,30 @@
   margin-bottom: 10px;
   color: #00bcd4;
 }
+
+.dashboard-container {
+  display: flex;
+  height: 100%;
+  overflow: hidden; /* 🔒 blocca scroll */
+}
+
+.sidebar {
+  width: 260px;
+  background: #20242b;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 25px 20px;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  box-shadow: inset -2px 0 20px rgba(0,0,0,0.6);
+  overflow: hidden;
+}
+
+.map-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #1b1f25;
+  overflow: hidden;
+}

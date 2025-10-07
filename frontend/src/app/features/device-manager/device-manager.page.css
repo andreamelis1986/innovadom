@@ -1,0 +1,227 @@
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  background: #10151b;
+  color: #fff;
+  overflow: hidden;
+  font-family: "Poppins", sans-serif;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+
+/* === SIDEBAR === */
+.sidebar {
+  width: 240px;
+  background: rgba(24, 28, 36, 0.9);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset -2px 0 15px rgba(0, 0, 0, 0.4);
+  overflow-y: auto;
+}
+
+.sidebar::before {
+  content: "";
+  display: block;
+  width: 60%;
+  height: 2px;
+  background: linear-gradient(90deg, #00eaff, transparent);
+  margin-bottom: 6px;
+  border-radius: 2px;
+}
+
+.stat-card {
+  background: rgba(15, 20, 25, 0.85);
+  border-radius: 14px;
+  padding: 10px;
+  text-align: center;
+  transition: 0.3s;
+  box-shadow: 0 0 12px rgba(0, 224, 255, 0.08);
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 18px rgba(0, 224, 255, 0.25);
+}
+
+.stat-icon i {
+  font-size: 22px;
+  color: #00eaff;
+  margin-bottom: 6px;
+}
+
+/* === CONTENUTO PRINCIPALE === */
+.content {
+  flex: 1;
+  padding: 25px 40px;
+  overflow-y: auto;
+}
+
+.top-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.add-btn {
+  background: #00eaff;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.add-btn:hover {
+  background: #00bcd4;
+  transform: translateY(-2px);
+}
+
+/* === DEVICES === */
+.devices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 22px;
+}
+
+.device-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.device-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 18px rgba(0, 234, 255, 0.2);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.device-icon {
+  font-size: 22px;
+  color: #00eaff;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  inset: 0;
+  background-color: #444;
+  border-radius: 22px;
+  transition: 0.3s;
+}
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+.toggle-switch input:checked + .slider {
+  background-color: #00eaff;
+}
+.toggle-switch input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* === MODALE === */
+.add-device-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.add-device-modal {
+  background: rgba(20, 25, 35, 0.95);
+  border-radius: 16px;
+  padding: 25px;
+  width: 800px;
+  max-width: 90%;
+  box-shadow: 0 0 25px rgba(0, 224, 255, 0.2);
+}
+
+.add-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.add-form input,
+.add-form select {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.confirm-btn {
+  background: #00eaff;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.map-container {
+  position: relative;
+  cursor: crosshair;
+}
+
+.map-container::after {
+  content: '';
+  position: absolute;
+  top: var(--click-y, 0);
+  left: var(--click-x, 0);
+  width: 12px;
+  height: 12px;
+  background: #00e0ff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 10px #00e0ff;
+}

@@ -12,7 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
   selector: 'app-root',
   imports: [
     CommonModule,  // 👈 aggiunto qui
-    RouterOutlet, RouterLink, RouterLinkActive,
+    RouterOutlet,
     MatSidenavModule, MatToolbarModule, MatListModule, MatIconModule, MatButtonModule
   ],
   template: `

@@ -1,0 +1,24 @@
+<header class="topbar">
+  <div class="topbar-left">
+    <i class="fas fa-house-user logo-icon"></i>
+    <span class="logo-text">DomusControl</span>
+  </div>
+
+  <nav class="menu-center">
+    <a routerLink="/home" routerLinkActive="active" class="menu-item">Dashboard</a>
+    <a routerLink="/devices" routerLinkActive="active" class="menu-item">Dispositivi</a>
+    <a routerLink="/gestione" routerLinkActive="active" class="menu-item">Gestione</a>
+    <a routerLink="/videocamera" routerLinkActive="active" class="menu-item">Videocamera</a>
+  </nav>
+
+  <div class="topbar-right">
+    <div class="user-profile">
+      <img src="assets/foto_profilo_andrea.jpg" alt="User" class="profile-pic" />
+      <span class="username">Andrea</span>
+    </div>
+  </div>
+</header>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>
