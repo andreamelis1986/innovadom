@@ -1,15 +1,14 @@
 <div class="dashboard-container">
-
   <!-- === SIDEBAR === -->
   <aside class="sidebar">
     <div *ngFor="let s of stats" class="stat-card">
       <div class="stat-icon">
         <i [ngClass]="{
-    'fas fa-microchip': s.label === 'Totali',
-    'fas fa-signal': s.label === 'Online',
-    'fas fa-plug': s.label === 'Offline',
-    'fas fa-lightbulb': s.label === 'Luci'
-  }"></i>
+          'fas fa-microchip': s.label === 'Totali',
+          'fas fa-signal': s.label === 'Online',
+          'fas fa-plug': s.label === 'Offline',
+          'fas fa-lightbulb': s.label === 'Luci'
+        }"></i>
       </div>
 
       <svg width="90" height="90" viewBox="0 0 100 100">
@@ -39,11 +38,11 @@
         <div class="card-header">
           <div class="card-header-left">
             <i [ngClass]="{
-    'fa-solid fa-lightbulb': d.type === 'light',
-    'fa-solid fa-temperature-three-quarters': d.type === 'climate',
-    'fa-solid fa-video': d.type === 'camera',
-    'fa-solid fa-window-maximize': d.type === 'shutter'
-  }" class="device-icon"></i>
+              'fa-solid fa-lightbulb': d.type === 'light',
+              'fa-solid fa-temperature-three-quarters': d.type === 'climate',
+              'fa-solid fa-video': d.type === 'camera',
+              'fa-solid fa-window-maximize': d.type === 'shutter'
+            }" class="device-icon"></i>
 
             <h4>{{ d.name || 'Senza nome' }}</h4>
           </div>
@@ -56,9 +55,7 @@
 
         <p><strong>Tipo:</strong> {{ d.type }}</p>
         <p><strong>IP:</strong> {{ d.ip || '-' }}</p>
-        <p><strong>Stato:</strong>
-          <span [ngClass]="d.status">{{ d.status }}</span>
-        </p>
+        <p><strong>Stato:</strong> <span [ngClass]="d.status">{{ d.status }}</span></p>
 
         <button *ngIf="d.id" (click)="deleteDevice(d.id!)" class="delete-btn">
           <i class="fa-solid fa-trash"></i> Elimina
@@ -85,20 +82,22 @@
       <button type="button" class="cancel-btn" (click)="closeAddDeviceForm()">Annulla</button>
     </form>
 
-<div class="map-container" (click)="selectPosition($event)">
-  <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
-  <div *ngFor="let device of devices()" class="device-icon"
-       [class.on]="device.status === 'on'"
-       [style.top.%]="device.top"
-       [style.left.%]="device.left">
-    <i [ngClass]="{
-      'fa-solid fa-lightbulb': device.type === 'light',
-      'fa-solid fa-temperature-high': device.type === 'climate',
-      'fa-solid fa-video': device.type === 'camera',
-      'fa-solid fa-window-maximize': device.type === 'shutter'
-    }"></i>
-  </div>
-</div>
+    <!-- ✅ Mappa cliccabile -->
+    <div class="map-container" (click)="selectPosition($event)">
+      <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
 
+      <!-- ✅ Solo anteprima nuovo dispositivo -->
+      <div class="device-icon preview"
+           *ngIf="newDevice.top && newDevice.left"
+           [style.top.%]="newDevice.top"
+           [style.left.%]="newDevice.left">
+        <i [ngClass]="{
+          'fa-solid fa-lightbulb': newDevice.type === 'light',
+          'fa-solid fa-temperature-high': newDevice.type === 'climate',
+          'fa-solid fa-video': newDevice.type === 'camera',
+          'fa-solid fa-window-maximize': newDevice.type === 'shutter'
+        }"></i>
+      </div>
+    </div>
   </div>
 </div>

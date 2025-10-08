@@ -5,10 +5,7 @@
   color: #fff;
   overflow: hidden;
   font-family: "Poppins", sans-serif;
-  margin-top: 0 !important;
-  padding-top: 0 !important;
 }
-
 
 /* === SIDEBAR === */
 .sidebar {
@@ -77,6 +74,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
 }
+
 .add-btn:hover {
   background: #00bcd4;
   transform: translateY(-2px);
@@ -120,41 +118,6 @@
   color: #00eaff;
 }
 
-.toggle-switch {
-  position: relative;
-  width: 44px;
-  height: 24px;
-}
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-.slider {
-  position: absolute;
-  inset: 0;
-  background-color: #444;
-  border-radius: 22px;
-  transition: 0.3s;
-}
-.slider:before {
-  content: "";
-  position: absolute;
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background: white;
-  border-radius: 50%;
-  transition: 0.3s;
-}
-.toggle-switch input:checked + .slider {
-  background-color: #00eaff;
-}
-.toggle-switch input:checked + .slider:before {
-  transform: translateX(20px);
-}
-
 /* === MODALE === */
 .add-device-overlay {
   position: fixed;
@@ -190,38 +153,25 @@
   padding: 8px;
 }
 
-.confirm-btn {
-  background: #00eaff;
-  color: #000;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.cancel-btn {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 14px;
-  cursor: pointer;
-}
-
+/* === MAPPA === */
 .map-container {
   position: relative;
   cursor: crosshair;
 }
 
-.map-container::after {
-  content: '';
+.map-image {
+  width: 100%;
+  max-width: 800px;
+  border-radius: 12px;
+  pointer-events: none; /* ✅ consente il click */
+  user-select: none;
+}
+
+.device-icon.preview {
   position: absolute;
-  top: var(--click-y, 0);
-  left: var(--click-x, 0);
-  width: 12px;
-  height: 12px;
-  background: #00e0ff;
-  border-radius: 50%;
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 10px #00e0ff;
+  color: #00eaff;
+  font-size: 22px;
+  filter: drop-shadow(0 0 8px #00eaff);
+  transition: all 0.3s ease;
 }

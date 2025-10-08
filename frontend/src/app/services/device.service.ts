@@ -1,70 +1,53 @@
-import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { Device } from '../models/device.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class DeviceService {
-  private http = inject(HttpClient);
-  private platformId = inject(PLATFORM_ID);
+  private apiUrl = 'http://localhost:3000/api/devices';
+  devices = signal<Device[]>([]);
 
-  private _devices = signal<Device[]>([]);
-  devices = this._devices.asReadonly();
+  constructor(private http: HttpClient) { }
 
-  private apiUrl = '/api/devices'; // proxy.conf.json → http://localhost:3000/api/devices
-
-  constructor() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.loadDevicesFromDB();
-    }
+  loadDevicesFromDB(): Observable<Device[]> {
+    return this.http.get<Device[]>(this.apiUrl);
   }
 
-  // === CARICA DAL BACKEND ===
-  loadDevicesFromDB() {
-    this.http.get<Device[]>(this.apiUrl).subscribe({
-      next: (data) => {
-        this._devices.set(data);
-        console.log('🔹 Devices caricati dal backend:', data);
-      },
-      error: (err) => console.error('❌ Errore caricamento devices:', err)
-    });
-  }
-
-  // === CRUD ===
-  addDevice(device: Device) {
-    return this.http.post<Device>(`${this.apiUrl}/devices`, device);
-  }
-
-  deleteDevice(id: number) {
-    this.http.delete(`${this.apiUrl}/${id}`).subscribe({
-      next: () => {
-        this._devices.update(list => list.filter(d => d.id !== id));
-      },
-      error: (err) => console.error('Errore eliminazione device:', err)
-    });
+  addDevice(device: Device): Observable<Device> {
+    return this.http.post<Device>(this.apiUrl, device);
   }
 
   updateDeviceStatus(id: number, status: 'on' | 'off') {
-    this.http.put(`${this.apiUrl}/${id}`, { status }).subscribe({
-      next: () => {
-        this._devices.update(list =>
-          list.map(d => (d.id === id ? { ...d, status } : d))
-        );
-      },
-      error: (err) => console.error('Errore aggiornamento stato:', err)
+    return this.http.put(`${this.apiUrl}/${id}`, { status });
+  }
+
+  deleteDevice(id: number): void {
+    this.http.delete(`${this.apiUrl}/${id}`).subscribe({
+      next: () => console.log(`✅ Dispositivo ${id} eliminato`),
+      error: (err) => console.error('❌ Errore eliminazione:', err)
     });
   }
 
-  updateDevicePosition(id: number, top: number, left: number) {
-    this.http.put(`${this.apiUrl}/${id}/position`, { top, left }).subscribe({
+  // ✅ AGGIUNTO: aggiorna posizione del dispositivo
+  setPosition(id: number, position: { top: number; left: number }) {
+    return this.http.put(`${this.apiUrl}/${id}`, position);
+  }
+
+  // ✅ AGGIUNTO: attiva/disattiva un dispositivo
+  toggleDevice(id: number): void {
+    const currentDevices = this.devices();
+    const device = currentDevices.find(d => d.id === id);
+    if (!device) return;
+
+    const newStatus = device.status === 'on' ? 'off' : 'on';
+    this.updateDeviceStatus(id, newStatus).subscribe({
       next: () => {
-        this._devices.update(list =>
-          list.map(d => (d.id === id ? { ...d, top, left } : d))
-        );
+        device.status = newStatus;
+        this.devices.set([...currentDevices]);
+        console.log(`🔁 Dispositivo ${id} aggiornato a ${newStatus}`);
       },
-      error: (err) => console.error('Errore aggiornamento posizione:', err)
+      error: (err) => console.error('❌ Errore toggle dispositivo:', err)
     });
   }
 
@@ -88,36 +71,4 @@ export class DeviceService {
       }
     };
   }
-
-  // === AGGIORNA POSIZIONE (es. nella mappa)
-  setPosition(id: number, position: number) {
-    this.http.put(`${this.apiUrl}/${id}`, { position }).subscribe({
-      next: () => {
-        this._devices.update(list =>
-          list.map(d => (d.id === id ? { ...d, position } : d))
-        );
-      },
-      error: (err) => console.error('Errore aggiornamento posizione:', err)
-    });
-  }
-
-  // === TOGGLE STATO ON/OFF
-  toggleDevice(id: number) {
-    const current = this._devices().find(d => d.id === id);
-    if (!current) return;
-
-    const newStatus: 'on' | 'off' = current.status === 'on' ? 'off' : 'on';
-
-    this.http.put(`${this.apiUrl}/${id}`, { status: newStatus }).subscribe({
-      next: () => {
-        this._devices.update(list =>
-          list.map(d => (d.id === id ? { ...d, status: newStatus } : d))
-        );
-      },
-      error: (err) => console.error('Errore toggle device:', err)
-    });
-  }
-
-
-
 }

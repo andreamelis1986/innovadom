@@ -10,23 +10,17 @@ import { Device } from '../../models/device.model';
   imports: [CommonModule, FormsModule, NgFor],
   templateUrl: './device-manager.page.html',
   styleUrls: ['./device-manager.page.css'],
-  encapsulation: ViewEncapsulation.None // ✅ disattiva isolamento CSS globale
+  encapsulation: ViewEncapsulation.None
 })
 export class DeviceManagerPage implements OnInit {
-  // ✅ Iniezioni
   private deviceService = inject(DeviceService);
   private platformId = inject(PLATFORM_ID);
 
-  // ✅ Signal con tipizzazione
   devices = signal<Device[]>([]);
-
-  // ✅ Nuovo dispositivo di default
   newDevice: Device = { name: '', type: 'light', ip: '', status: 'off', top: 0, left: 0 };
-
-  // ✅ Stato modale
   showAddForm = false;
+successMessage = '';
 
-  // ✅ Statistiche
   stats = [
     { label: 'Totali', value: 0, perc: 0, desc: 'Dispositivi registrati' },
     { label: 'Online', value: 0, perc: 0, desc: 'Dispositivi accesi' },
@@ -36,8 +30,7 @@ export class DeviceManagerPage implements OnInit {
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      this.deviceService.loadDevicesFromDB();
-      setTimeout(() => this.updateStats(), 1000);
+      this.loadDevicesAndStats(); // ✅ usa la nuova funzione
     }
   }
 
@@ -65,31 +58,23 @@ export class DeviceManagerPage implements OnInit {
     if (!this.newDevice.name || !this.newDevice.ip) return;
 
     this.deviceService.addDevice(this.newDevice).subscribe({
-      next: (device: Device) => {
-        // ✅ Evita duplicati e aggiunge con mutate()
-        if (!this.devices().some(d => d.id === device.id)) {
-          this.devices.mutate((devices: Device[]) => devices.push(device));
-        }
+      next: () => {
+  this.successMessage = '✅ Dispositivo aggiunto con successo!';
+  setTimeout(() => (this.successMessage = ''), 2000);
 
-        // ✅ Reset form
-        this.newDevice = {
-          name: '',
-          type: 'light',
-          ip: '',
-          status: 'off',
-          top: 0,
-          left: 0
-        };
-
-        this.showAddForm = false;
-      },
-      error: (err: any) => console.error('Errore aggiunta dispositivo:', err)
+  this.loadDevicesAndStats();
+  this.showAddForm = false;
+  this.newDevice = { name: '', type: 'light', ip: '', status: 'off', top: 0, left: 0 };
+},
+      error: (err: unknown) => console.error('❌ Errore aggiunta dispositivo:', err)
     });
   }
 
+
   deleteDevice(id: number) {
     this.deviceService.deleteDevice(id);
-    setTimeout(() => this.updateStats(), 500);
+    this.devices.update(devices => devices.filter(d => d.id !== id));
+    this.updateStats();
   }
 
   openAddDeviceForm() {
@@ -100,20 +85,29 @@ export class DeviceManagerPage implements OnInit {
     this.showAddForm = false;
   }
 
-  // ✅ Serve per usare Math in HTML
   Math = Math;
 
-  // ✅ Gestione click sulla mappa per posizione
+  // ✅ Selezione posizione cliccando sulla mappa
   selectPosition(event: MouseEvent) {
     const mapElement = event.currentTarget as HTMLElement;
     const rect = mapElement.getBoundingClientRect();
-
     const xPercent = ((event.clientX - rect.left) / rect.width) * 100;
     const yPercent = ((event.clientY - rect.top) / rect.height) * 100;
 
     this.newDevice.left = parseFloat(xPercent.toFixed(2));
     this.newDevice.top = parseFloat(yPercent.toFixed(2));
 
-    console.log(`Posizione selezionata: top=${this.newDevice.top}%, left=${this.newDevice.left}%`);
+    console.log(`📍 Posizione selezionata: top=${this.newDevice.top}%, left=${this.newDevice.left}%`);
   }
+
+  loadDevicesAndStats() {
+    this.deviceService.loadDevicesFromDB().subscribe({
+      next: (data: Device[]) => {
+        this.devices.set(data);
+        this.updateStats();
+      },
+      error: (err: unknown) => console.error('❌ Errore ricaricamento devices:', err)
+    });
+  }
+
 }
