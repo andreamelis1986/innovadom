@@ -1,7 +1,6 @@
 <div class="dashboard-container">
-  <!-- === SIDEBAR === -->
-  <aside class="sidebar">
-    <div *ngFor="let s of stats" class="stat-card">
+  <aside class="sidebar fixed-sidebar">
+    <div *ngFor="let s of stats" class="stat-card compact">
       <div class="stat-icon">
         <i [ngClass]="{
           'fas fa-microchip': s.label === 'Totali',
@@ -11,30 +10,34 @@
         }"></i>
       </div>
 
-      <svg width="90" height="90" viewBox="0 0 100 100">
+      <svg width="70" height="70" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r="45" stroke="#1e293b" stroke-width="10" fill="none" />
         <circle cx="50" cy="50" r="45" stroke="#00e0ff" stroke-width="10" fill="none" stroke-linecap="round"
           [attr.stroke-dasharray]="2 * Math.PI * 45" [attr.stroke-dashoffset]="(2 * Math.PI * 45) - (s.perc * 2.8)"
           style="transition: stroke-dashoffset 0.6s ease" />
-        <text x="50" y="55" text-anchor="middle" font-size="15" fill="#fff" font-weight="bold">
+        <text x="50" y="55" text-anchor="middle" font-size="14" fill="#fff" font-weight="bold">
           {{ s.value }}
         </text>
       </svg>
 
-      <h4>{{ s.label }}</h4>
+      <h5>{{ s.label }}</h5>
       <p>{{ s.desc }}</p>
     </div>
   </aside>
 
-  <!-- === AREA PRINCIPALE === -->
   <main class="content">
     <div class="top-actions">
       <h3>Gestione Dispositivi</h3>
       <button class="add-btn" (click)="openAddDeviceForm()">+ Aggiungi Dispositivo</button>
     </div>
 
+    <!-- ✅ Messaggio di successo solo per eliminazione -->
+    <div *ngIf="successMessage && !showAddForm" class="message success show">
+      {{ successMessage }}
+    </div>
+
     <div class="devices-grid">
-      <div *ngFor="let d of devices()" class="device-card">
+      <div *ngFor="let d of devices()" class="device-card" [class.on]="d.status === 'on'">
         <div class="card-header">
           <div class="card-header-left">
             <i [ngClass]="{
@@ -43,60 +46,76 @@
               'fa-solid fa-video': d.type === 'camera',
               'fa-solid fa-window-maximize': d.type === 'shutter'
             }" class="device-icon"></i>
-
             <h4>{{ d.name || 'Senza nome' }}</h4>
           </div>
 
-          <label class="toggle-switch">
+          <label class="modern-switch">
             <input type="checkbox" [checked]="d.status === 'on'" (change)="toggleDevice(d)" />
-            <span class="slider"></span>
+            <span class="switch-slider"></span>
           </label>
         </div>
 
         <p><strong>Tipo:</strong> {{ d.type }}</p>
         <p><strong>IP:</strong> {{ d.ip || '-' }}</p>
-        <p><strong>Stato:</strong> <span [ngClass]="d.status">{{ d.status }}</span></p>
 
-        <button *ngIf="d.id" (click)="deleteDevice(d.id!)" class="delete-btn">
+        <button *ngIf="d.id" (click)="openDeleteConfirm(d)" class="delete-btn-modern">
           <i class="fa-solid fa-trash"></i> Elimina
         </button>
       </div>
     </div>
   </main>
-</div>
 
-<!-- === MODALE AGGIUNTA DISPOSITIVO === -->
-<div *ngIf="showAddForm" class="add-device-overlay">
-  <div class="add-device-modal">
-    <h3>Nuovo Dispositivo</h3>
-    <form (ngSubmit)="addDevice()" class="add-form">
-      <input type="text" [(ngModel)]="newDevice.name" name="name" placeholder="Nome dispositivo" required />
-      <select [(ngModel)]="newDevice.type" name="type">
-        <option value="light">💡 Luce</option>
-        <option value="climate">🌡️ Clima</option>
-        <option value="camera">📹 Telecamera</option>
-        <option value="shutter">🪟 Serranda</option>
-      </select>
-      <input type="text" [(ngModel)]="newDevice.ip" name="ip" placeholder="Indirizzo IP" required />
-      <button type="submit" class="confirm-btn">Conferma</button>
-      <button type="button" class="cancel-btn" (click)="closeAddDeviceForm()">Annulla</button>
-    </form>
+  <!-- ✅ MODALE CONFERMA ELIMINAZIONE -->
+  <div *ngIf="confirmDeleteDevice" class="delete-confirm-overlay show">
+    <div class="delete-confirm-modal">
+      <h3>Eliminare il dispositivo?</h3>
+      <p>Sei sicuro di voler eliminare <strong>{{ confirmDeleteDevice.name }}</strong> ({{ confirmDeleteDevice.ip }})?
+      </p>
+      <div class="buttons">
+        <button class="confirm-delete" (click)="confirmDelete()">Elimina</button>
+        <button class="cancel-delete" (click)="cancelDelete()">Annulla</button>
+      </div>
+    </div>
+  </div>
 
-    <!-- ✅ Mappa cliccabile -->
-    <div class="map-container" (click)="selectPosition($event)">
-      <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
+  <!-- ✅ MODALE AGGIUNTA DISPOSITIVO -->
+  <div *ngIf="showAddForm" class="add-device-overlay show">
+    <div class="add-device-modal">
+      <h3 class="modal-title">Nuovo Dispositivo</h3>
 
-      <!-- ✅ Solo anteprima nuovo dispositivo -->
-      <div class="device-icon preview"
-           *ngIf="newDevice.top && newDevice.left"
-           [style.top.%]="newDevice.top"
-           [style.left.%]="newDevice.left">
-        <i [ngClass]="{
+      <!-- ✅ Messaggi subito sotto il titolo -->
+      <div class="message-wrapper">
+        <div *ngIf="errorMessage" class="message error show">{{ errorMessage }}</div>
+        <div *ngIf="successMessage" class="message success show">{{ successMessage }}</div>
+      </div>
+
+      <form (ngSubmit)="addDevice()" class="add-form">
+        <input type="text" [(ngModel)]="newDevice.name" name="name" placeholder="Nome dispositivo *" required />
+        <select [(ngModel)]="newDevice.type" name="type">
+          <option value="light"><i class="fa-solid fa-lightbulb"></i> Luce</option>
+          <option value="climate"><i class="fa-solid fa-temperature-three-quarters"></i> Clima</option>
+          <option value="camera"><i class="fa-solid fa-video"></i> Telecamera</option>
+          <option value="shutter"><i class="fa-solid fa-window-maximize"></i> Serranda</option>
+        </select>
+
+        <input type="text" [(ngModel)]="newDevice.ip" name="ip" placeholder="Indirizzo IP *" maxlength="15" required
+          (input)="formatIp($event)" />
+
+        <button type="submit" class="confirm-btn" [disabled]="isAdding">Conferma</button>
+        <button type="button" class="cancel-btn" (click)="closeAddDeviceForm()">Annulla</button>
+      </form>
+
+      <div class="map-container" (click)="selectPosition($event)">
+        <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
+        <div class="device-icon preview" *ngIf="newDevice.top && newDevice.left" [style.top.%]="newDevice.top"
+          [style.left.%]="newDevice.left">
+          <i [ngClass]="{
           'fa-solid fa-lightbulb': newDevice.type === 'light',
           'fa-solid fa-temperature-high': newDevice.type === 'climate',
           'fa-solid fa-video': newDevice.type === 'camera',
           'fa-solid fa-window-maximize': newDevice.type === 'shutter'
         }"></i>
+        </div>
       </div>
     </div>
   </div>

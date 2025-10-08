@@ -1,5 +1,4 @@
 <div class="dashboard-container">
-  <!-- 🔹 Sidebar solo nella home -->
   <aside class="sidebar">
     <div class="info-card" *ngFor="let item of infoCards" (click)="toggleCard(item)" [class.expanded]="item.expanded">
       <div class="card-header">
@@ -32,20 +31,20 @@
     </div>
   </aside>
 
-  <!-- 🔸 Mappa fissa -->
   <div class="map-wrapper">
     <div class="map-container">
       <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
 
-      <div *ngFor="let device of devices"
-           class="device-icon"
-           [ngClass]="device.type"
-           [class.on]="device.status === 'on'"
-           [style.top]="device.top"
-           [style.left]="device.left"
-           (click)="device.type === 'camera' ? openCamera(device) : toggleDevice(device)">
-        <i [ngClass]="device.icon"></i>
-      </div>
+      <!-- 🔹 Icone dispositivi -->
+      <div
+        *ngFor="let device of devices"
+        class="device-icon"
+        [ngClass]="device.icon"
+        [style.top.%]="device.top"
+        [style.left.%]="device.left"
+        [class.on]="device.status === 'on'"
+        (click)="toggleDevice(device)"
+      ></div>
     </div>
   </div>
 </div>

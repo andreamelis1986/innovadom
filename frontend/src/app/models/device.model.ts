@@ -4,7 +4,9 @@ export interface Device {
   type: 'light' | 'climate' | 'camera' | 'shutter' | 'sensor';
   status: 'on' | 'off';
   ip?: string;
+  top: number;   // ← era string
+  left: number;  // ← era string
   position?: number;
-  top?: number;
-  left?: number;
+  streamUrl?: string;
+  icon?: string; // ← aggiungi anche questo se manca
 }

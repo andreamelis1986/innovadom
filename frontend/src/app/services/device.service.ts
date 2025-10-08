@@ -15,7 +15,14 @@ export class DeviceService {
   }
 
   addDevice(device: Device): Observable<Device> {
-    return this.http.post<Device>(this.apiUrl, device);
+    // 🟢 invia NUMERI al backend (tolgo l'eventuale '%')
+    const payload: any = {
+      ...device,
+      top: typeof device.top === 'string' ? parseFloat(device.top) : device.top,
+      left: typeof device.left === 'string' ? parseFloat(device.left) : device.left,
+    };
+    console.log('👉 POST /devices payload', payload);
+    return this.http.post<Device>(this.apiUrl, payload);
   }
 
   updateDeviceStatus(id: number, status: 'on' | 'off') {
@@ -29,10 +36,14 @@ export class DeviceService {
     });
   }
 
-  // ✅ AGGIUNTO: aggiorna posizione del dispositivo
-  setPosition(id: number, position: { top: number; left: number }) {
-    return this.http.put(`${this.apiUrl}/${id}`, position);
-  }
+// Aggiorna posizione (accetta {top,left} in % o numeri)
+setPosition(id: number, position: { top: number | string; left: number | string }) {
+  const payload = {
+    top: typeof position.top === 'string' ? parseFloat(position.top) : position.top,
+    left: typeof position.left === 'string' ? parseFloat(position.left) : position.left,
+  };
+  return this.http.put(`${this.apiUrl}/${id}`, payload);
+}
 
   // ✅ AGGIUNTO: attiva/disattiva un dispositivo
   toggleDevice(id: number): void {

@@ -270,10 +270,13 @@
   transform: translate(-50%, -50%) scale(1.2);
 }
 
-.device-icon.light.on i {
-  color: #ffeb3b;
-  filter: drop-shadow(0 0 10px rgba(255, 235, 59, 0.8));
-}
+.device-icon.on.fa-lightbulb { color: #ffeb3b; filter: drop-shadow(0 0 10px rgba(255,235,59,0.9)); }
+.device-icon.on.fa-temperature-high,
+.device-icon.on.fa-snowflake { color: #00bcd4; filter: drop-shadow(0 0 10px rgba(0,188,212,0.9)); }
+.device-icon.on.fa-video { color: #9c27b0; filter: drop-shadow(0 0 10px rgba(156,39,176,0.9)); }
+.device-icon.on.fa-up-down,
+.device-icon.on.fa-wave-square { color: #00ff80; filter: drop-shadow(0 0 10px rgba(0,255,128,0.9)); }
+
 
 .device-icon.climate.on i {
   color: #00bcd4;
@@ -411,4 +414,20 @@
   align-items: center;
   background: #1b1f25;
   overflow: hidden;
+}
+
+.map-container {
+  position: relative;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  aspect-ratio: 16 / 9; /* 👈 mantiene proporzioni costanti */
+}
+
+.map-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 12px;
 }
