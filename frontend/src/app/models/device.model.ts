@@ -1,12 +1,31 @@
 export interface Device {
   id?: number;
   name: string;
-  type: 'light' | 'climate' | 'camera' | 'shutter' | 'sensor';
-  status: 'on' | 'off';
+  type: 'light' | 'climate' | 'camera' | 'shutter' | 'sensor' | string;
   ip?: string;
-  top: number;   // ← era string
-  left: number;  // ← era string
+  room?: string;
+
+// 🔹 Stato generico
+status?: 'on' | 'off' | 'active' | 'inactive' | 'open' | 'closed' | 'loading';
+
+  // 🔹 Coordinate (dal DB)
+  pos_top?: number;
+  pos_left?: number;
+
+  // 🔹 Alias interni per Angular (usati nel CSS)
+  top?: number;
+  left?: number;
+
+  // 🔹 Altri campi opzionali
   position?: number;
-  streamUrl?: string;
-  icon?: string; // ← aggiungi anche questo se manca
+  is_active?: boolean;
+  icon?: string;
+  rtsp_url?: string;
+  ws_port?: number;
+
+  // 🔹 Campi specifici per serrande
+  shutter_position?: number; // 0 = chiusa, 100 = aperta
+
+  // 🔹 Alias frontend per il flusso video
+  streamUrl?: string; // ✅ aggiungi questa
 }

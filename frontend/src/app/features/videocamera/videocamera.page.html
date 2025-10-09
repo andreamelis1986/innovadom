@@ -1,3 +1,31 @@
-<div class="camera-container">
-  <canvas id="provisionCam"></canvas>
+<div class="videocam-page">
+  <h2 class="title">Telecamere</h2>
+
+  <div *ngIf="loading" class="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Caricamento in corso...</span>
+  </div>
+
+  <div *ngIf="!loading" class="camera-grid">
+    <div *ngFor="let cam of cameras" class="camera-card" [class.offline]="cam.status !== 'active'">
+      <div class="camera-header">
+        <div class="camera-info">
+          <i class="fas fa-video camera-icon"></i>
+          <span class="camera-name">{{ cam.name }}</span>
+        </div>
+        <div class="camera-status" [class.online]="cam.status === 'active'">
+          {{ cam.status === 'active' ? '🟢 Online' : '🔴 Offline' }}
+        </div>
+      </div>
+
+      <div class="camera-body">
+        <div *ngIf="cam.status === 'active'" class="live-badge">LIVE</div>
+        <canvas [id]="'cam-' + cam.id"></canvas>
+        <div *ngIf="cam.status !== 'active'" class="offline-overlay">
+          <i class="fas fa-plug"></i>
+          <span>OFFLINE</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

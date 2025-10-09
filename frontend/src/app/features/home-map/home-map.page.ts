@@ -1,12 +1,14 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, ViewChild, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { DeviceService } from '../../services/device.service';
 import { Device } from '../../models/device.model';
+import { ToastComponent } from '../../shared/toast/toast.component';
 
 @Component({
     selector: 'app-home-map',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule, ToastComponent],
     templateUrl: './home-map.page.html',
     styleUrls: ['./home-map.page.css'],
 })
@@ -14,19 +16,26 @@ export class HomeMapPage implements OnInit {
     private devicesSvc = inject(DeviceService);
     constructor(private cdr: ChangeDetectorRef) { }
 
+    @ViewChild(ToastComponent) toast!: ToastComponent;
+
     currentTime = '';
     currentDate = '';
-    selectedCamera: any = null;
+    selectedCamera: Device | null = null;
+    selectedShutter: Device | null = null;
     devices: Device[] = [];
-
-    infoCards = [
-        { icon: 'fas fa-lightbulb', title: 'Luci', value: '-', color: '#00bcd4', expanded: false },
-        { icon: 'fas fa-temperature-high', title: 'Temperatura', value: '22 °C', color: '#ff9800', expanded: false },
-        { icon: 'fas fa-bolt', title: 'Energia', value: '-', color: '#4caf50', expanded: false },
-        { icon: 'fas fa-video', title: 'Telecamere', value: '-', color: '#2196f3', expanded: false },
-    ];
-
+    loadingDevice = false;
     currentTemperature = 22;
+
+    private lastToastTime = 0;
+    private lastOfflineAlert: string | null = null;
+
+    /** ✅ Computed reattivi */
+    lightsOn = computed(() =>
+        this.devicesSvc.devices().filter(d => d.type === 'light' && d.status === 'on').length
+    );
+    camsOn = computed(() =>
+        this.devicesSvc.devices().filter(d => d.type === 'camera' && d.status === 'on').length
+    );
 
     ngOnInit(): void {
         this.updateDateTime();
@@ -35,29 +44,36 @@ export class HomeMapPage implements OnInit {
         this.devicesSvc.connectWebSocket();
     }
 
-    /** Carica dispositivi dal DB */
+    /** 🔹 Carica dispositivi dal DB */
     loadDevicesFromDB(): void {
         this.devicesSvc.loadDevicesFromDB().subscribe({
             next: (res: Device[]) => {
-                // Lasciamo top/left come numeri, senza %
                 const normalized = res.map((d) => ({
                     ...d,
-                    top: Number(d.top) || 0,
-                    left: Number(d.left) || 0,
+                    top: Number(d.pos_top) || 0,
+                    left: Number(d.pos_left) || 0,
                     icon: d.icon || this.getIconForType(d.type),
+                    shutter_position:
+                        d.shutter_position != null
+                            ? Number(d.shutter_position)
+                            : d.position != null
+                                ? Number(d.position)
+                                : d.type === 'shutter'
+                                    ? d.status === 'open'
+                                        ? 100
+                                        : 0
+                                    : undefined,
                 }));
 
-                console.table(normalized);
                 this.devices = normalized;
                 this.devicesSvc.devices.set(normalized);
-                this.updateInfoCards();
                 this.cdr.detectChanges();
             },
             error: (err) => console.error('❌ Errore caricamento dispositivi:', err),
         });
     }
 
-    /** Icone dinamiche per tipo */
+    /** 🔹 Icone dinamiche */
     getIconForType(type: string): string {
         switch (type) {
             case 'light': return 'fas fa-lightbulb';
@@ -69,18 +85,90 @@ export class HomeMapPage implements OnInit {
         }
     }
 
-    updateInfoCards(): void {
-        const lightsOn = this.devices.filter(d => d.type === 'light' && d.status === 'on').length;
-        const camsOn = this.devices.filter(d => d.type === 'camera' && d.status === 'on').length;
+    /** 🔹 Gestione click icona */
+    handleDeviceClick(device: Device): void {
+        if (!device || !device.id || this.loadingDevice) return;
+        this.loadingDevice = true;
+        this.closeAllPopups();
+        this.cdr.detectChanges();
 
-        this.infoCards = [
-            { icon: 'fas fa-lightbulb', title: 'Luci', value: `${lightsOn} On`, color: '#00bcd4', expanded: false },
-            { icon: 'fas fa-temperature-high', title: 'Temperatura', value: `${this.currentTemperature} °C`, color: '#ff9800', expanded: false },
-            { icon: 'fas fa-bolt', title: 'Energia', value: '4.5 kWh', color: '#4caf50', expanded: false },
-            { icon: 'fas fa-video', title: 'Telecamere', value: `${camsOn} On`, color: '#2196f3', expanded: false },
-        ];
+        this.devicesSvc.checkDeviceOnline(device.id).subscribe({
+            next: (res) => {
+                this.loadingDevice = false;
+                if (!res.online) {
+                    if (this.lastOfflineAlert !== device.name) {
+                        this.showAlert(`${device.name} è offline`);
+                        this.lastOfflineAlert = device.name;
+                        setTimeout(() => (this.lastOfflineAlert = null), 2500);
+                    }
+                    return;
+                }
+
+                if (device.type === 'camera') this.openCamera(device);
+                else if (device.type === 'shutter') this.openShutterPopup(device);
+                else this.toggleDevice(device);
+
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                this.loadingDevice = false;
+                this.showAlert(`${device.name} non risponde`);
+                this.cdr.detectChanges();
+            },
+        });
     }
 
+    areAllLightsOn(): boolean {
+        return this.devices.filter((d) => d.type === 'light').every((d) => d.status === 'on');
+    }
+
+    /** 🔹 Controllo singolo */
+    toggleDevice(device: Device): void {
+        this.devicesSvc.toggleDevice(device.id!);
+        device.status = device.status === 'on' ? 'off' : 'on';
+    }
+
+    /** 🔹 Accende o spegne tutte le luci, controllando connessione e ripristinando stato */
+    toggleAllLights(): void {
+        const allOn = this.areAllLightsOn();
+
+        this.devices
+            .filter((d) => d.type === 'light')
+            .forEach((light) => {
+                const oldStatus = light.status; // 🔹 salva stato originale
+                light.status = 'loading'; // 🌀 stato temporaneo visivo
+
+                this.devicesSvc.checkDeviceOnline(light.id!).subscribe({
+                    next: (res) => {
+                        if (!res.online) {
+                            // ❌ Luce offline → messaggio e ripristino stato originale
+                            this.showAlert(`${light.name} è offline`);
+                            light.status = oldStatus;
+                            return;
+                        }
+
+                        // ✅ Luce online → aggiorna stato effettivo
+                        const newStatus = allOn ? 'off' : 'on';
+                        this.devicesSvc.updateDeviceStatus(light.id!, newStatus).subscribe({
+                            next: () => {
+                                light.status = newStatus;
+                            },
+                            error: () => {
+                                this.showAlert(`Errore aggiornamento ${light.name}`);
+                                light.status = oldStatus;
+                            },
+                        });
+                    },
+                    error: () => {
+                        // ⚠️ Errore connessione → messaggio + ripristino stato
+                        this.showAlert(`Impossibile contattare ${light.name}`);
+                        light.status = oldStatus;
+                    },
+                });
+            });
+    }
+
+    /** 🔹 Data e ora */
     updateDateTime(): void {
         const now = new Date();
         this.currentTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -89,46 +177,82 @@ export class HomeMapPage implements OnInit {
         });
     }
 
-    toggleDevice(device: Device): void {
-        this.devicesSvc.toggleDevice(device.id!);
-        device.status = device.status === 'on' ? 'off' : 'on';
-        this.updateInfoCards();
-    }
-
-    toggleAllLights(): void {
-        const allOn = this.areAllLightsOn();
-        this.devices
-            .filter((d) => d.type === 'light')
-            .forEach((light) => {
-                const newStatus = allOn ? 'off' : 'on';
-                this.devicesSvc.updateDeviceStatus(light.id!, newStatus).subscribe(() => {
-                    light.status = newStatus;
-                    this.updateInfoCards();
-                });
-            });
-    }
-
-    areAllLightsOn(): boolean {
-        return this.devices.filter(d => d.type === 'light').every(d => d.status === 'on');
-    }
-
-    openCamera(camera: any): void {
-        if (camera.type === 'camera') this.selectedCamera = camera;
+    /** 🔹 Camere */
+    openCamera(camera: Device): void {
+        this.selectedShutter = null;
+        this.selectedCamera = camera;
     }
 
     closeCamera(): void {
         this.selectedCamera = null;
     }
 
-    /** 🔽/🔼 Espandi card */
+    /** 🔹 Popup serranda */
+    openShutterPopup(device: Device): void {
+        this.selectedCamera = null;
+        const start =
+            device.shutter_position ??
+            device.position ??
+            (device.status === 'open' ? 100 : device.status === 'closed' ? 0 : 50);
+        this.selectedShutter = { ...device, shutter_position: Number(start) };
+    }
+
+    closeShutterPopup(): void {
+        this.selectedShutter = null;
+    }
+
+    openShutter(device: Device): void {
+        this.devicesSvc.openShutter(device.id!).subscribe({
+            next: () => {
+                device.status = 'open';
+                device.shutter_position = 100;
+                this.closeAllPopups();
+            },
+            error: () => this.showAlert(`${device.name} è offline`),
+        });
+    }
+
+    closeShutter(device: Device): void {
+        this.devicesSvc.closeShutter(device.id!).subscribe({
+            next: () => {
+                device.status = 'closed';
+                device.shutter_position = 0;
+                this.closeShutterPopup();
+            },
+            error: () => this.showAlert(`${device.name} è offline`),
+        });
+    }
+
+    setShutterPosition(device: Device): void {
+        const position = device.shutter_position ?? 0;
+        this.devicesSvc.setShutterPosition(device.id!, position).subscribe({
+            next: () => console.log(`Serranda impostata al ${position}%`),
+            error: () => this.showAlert(`${device.name} è offline`),
+        });
+    }
+
+    onShutterInput(val: any): void {
+        this.selectedShutter!.shutter_position = Number(val);
+    }
+
+    /** 🔹 Messaggi toast */
+    showAlert(msg: string): void {
+        const now = Date.now();
+        if (now - this.lastToastTime < 2000) return;
+        this.lastToastTime = now;
+        if (this.toast) this.toast.show(msg);
+    }
+
+    closeAllPopups(): void {
+        this.selectedCamera = null;
+        this.selectedShutter = null;
+    }
+
+    changeTemperature(delta: number): void {
+        this.currentTemperature += delta;
+    }
+
     toggleCard(item: any): void {
         item.expanded = !item.expanded;
     }
-
-    /** 🌡️ Cambia temperatura fittizia */
-    changeTemperature(delta: number): void {
-        this.currentTemperature += delta;
-        this.updateInfoCards();
-    }
 }
-

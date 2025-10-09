@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
 import { Device } from '../models/device.model';
+import { Observable, catchError, throwError, timeout } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class DeviceService {
@@ -15,7 +15,6 @@ export class DeviceService {
   }
 
   addDevice(device: Device): Observable<Device> {
-    // 🟢 invia NUMERI al backend (tolgo l'eventuale '%')
     const payload: any = {
       ...device,
       top: typeof device.top === 'string' ? parseFloat(device.top) : device.top,
@@ -29,23 +28,18 @@ export class DeviceService {
     return this.http.put(`${this.apiUrl}/${id}`, { status });
   }
 
-  deleteDevice(id: number): void {
-    this.http.delete(`${this.apiUrl}/${id}`).subscribe({
-      next: () => console.log(`✅ Dispositivo ${id} eliminato`),
-      error: (err) => console.error('❌ Errore eliminazione:', err)
-    });
+  deleteDevice(id: number) {
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-// Aggiorna posizione (accetta {top,left} in % o numeri)
-setPosition(id: number, position: { top: number | string; left: number | string }) {
-  const payload = {
-    top: typeof position.top === 'string' ? parseFloat(position.top) : position.top,
-    left: typeof position.left === 'string' ? parseFloat(position.left) : position.left,
-  };
-  return this.http.put(`${this.apiUrl}/${id}`, payload);
-}
+  setPosition(id: number, position: { top: number | string; left: number | string }) {
+    const payload = {
+      top: typeof position.top === 'string' ? parseFloat(position.top) : position.top,
+      left: typeof position.left === 'string' ? parseFloat(position.left) : position.left,
+    };
+    return this.http.put(`${this.apiUrl}/${id}`, payload);
+  }
 
-  // ✅ AGGIUNTO: attiva/disattiva un dispositivo
   toggleDevice(id: number): void {
     const currentDevices = this.devices();
     const device = currentDevices.find(d => d.id === id);
@@ -62,10 +56,10 @@ setPosition(id: number, position: { top: number | string; left: number | string 
     });
   }
 
+  // ✅ CORRETTO: path WebSocket aggiornato
   connectWebSocket() {
-    if (typeof window === 'undefined') return; // evita errore SSR
-
-    const socket = new WebSocket('ws://localhost:3000');
+    if (typeof window === 'undefined') return;
+    const socket = new WebSocket('ws://localhost:3000/ws/cameras');
 
     socket.onopen = () => console.log('🔌 WebSocket connesso');
     socket.onclose = () => console.log('❌ WebSocket disconnesso');
@@ -73,7 +67,6 @@ setPosition(id: number, position: { top: number | string; left: number | string 
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        // Gestisci messaggi del backend (es. aggiornamenti di stato)
         if (data.type === 'deviceUpdate') {
           this.updateDeviceStatus(data.id, data.status);
         }
@@ -82,4 +75,30 @@ setPosition(id: number, position: { top: number | string; left: number | string 
       }
     };
   }
+
+  // 🔽 Apri serranda
+  openShutter(id: number) {
+    return this.http.post(`${this.apiUrl}/${id}/open`, {});
+  }
+
+  // 🔼 Chiudi serranda
+  closeShutter(id: number) {
+    return this.http.post(`${this.apiUrl}/${id}/close`, {});
+  }
+
+  // ⚙️ Imposta posizione serranda (percentuale)
+  setShutterPosition(id: number, position: number) {
+    return this.http.post(`${this.apiUrl}/${id}/position`, { position });
+  }
+
+  // 🔍 Controllo stato online
+  checkDeviceOnline(id: number) {
+    return this.http
+      .get<{ online: boolean }>(`${this.apiUrl}/${id}/ping`)
+      .pipe(
+        timeout(2000), // ⏱️ massimo 2s di attesa
+        catchError(() => throwError(() => new Error('timeout')))
+      );
+  }
+
 }

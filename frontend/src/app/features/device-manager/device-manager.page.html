@@ -98,8 +98,8 @@
           <option value="shutter"><i class="fa-solid fa-window-maximize"></i> Serranda</option>
         </select>
 
-        <input type="text" [(ngModel)]="newDevice.ip" name="ip" placeholder="Indirizzo IP *" maxlength="15" required
-          (input)="formatIp($event)" />
+<input type="text" [(ngModel)]="newDevice.ip" name="ip" placeholder="Indirizzo IP *" maxlength="15" required />
+
 
         <button type="submit" class="confirm-btn" [disabled]="isAdding">Conferma</button>
         <button type="button" class="cancel-btn" (click)="closeAddDeviceForm()">Annulla</button>

@@ -431,3 +431,264 @@
   display: block;
   border-radius: 12px;
 }
+
+.shutter-controls {
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+}
+
+.shutter-controls .action-btn {
+  background: rgba(0,188,212,0.25);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 25px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+}
+
+.shutter-controls .action-btn:hover {
+  background: rgba(0,188,212,0.45);
+  transform: scale(1.05);
+}
+
+.shutter-popup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 25px;
+}
+
+.shutter-slider {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 220px;
+}
+
+.shutter-slider input[type="range"] {
+  writing-mode: bt-lr; /* bottom to top */
+  -webkit-appearance: slider-vertical;
+  width: 8px;
+  height: 180px;
+  accent-color: #00bcd4;
+  cursor: pointer;
+}
+
+.shutter-value {
+  position: absolute;
+  bottom: -28px;
+  color: #00bcd4;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.shutter-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.shutter-buttons .action-btn {
+  background: rgba(0,188,212,0.25);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 22px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.shutter-buttons .action-btn:hover {
+  background: rgba(0,188,212,0.45);
+  transform: scale(1.05);
+}
+
+.shutter-slider {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 240px;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.shutter-slider input[type="range"] {
+  writing-mode: bt-lr; /* bottom to top */
+  -webkit-appearance: slider-vertical;
+  width: 10px;
+  height: 180px;
+  accent-color: #00bcd4;
+  cursor: pointer;
+}
+
+.shutter-value {
+  color: #00bcd4;
+  font-weight: 700;
+  font-size: 20px;
+  text-shadow: 0 0 10px rgba(0,188,212,0.8);
+}
+
+.camera-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  opacity: 0;
+  background: rgba(25, 28, 33, 0.95);
+  border: 1px solid rgba(0, 188, 212, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 0 25px rgba(0, 188, 212, 0.4);
+  z-index: 2000;
+  width: 600px;
+  max-width: 90%;
+  transition: all 0.25s ease-out;
+  animation: none; /* disabilita l'animazione che causava il salto */
+}
+
+/* Quando Angular lo aggiunge, fai fade-in morbido */
+.camera-popup.ng-animating,
+.camera-popup.ng-trigger {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.camera-popup {
+  transform: translate(-50%, -50%) scale(0.95);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.camera-popup.show {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(25, 28, 33, 0.9);
+  color: #00bcd4;
+  font-weight: 600;
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 188, 212, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 3000;
+}
+
+.spinner {
+  border: 3px solid rgba(0, 188, 212, 0.2);
+  border-top: 3px solid #00bcd4;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.device-icon::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(25, 28, 33, 0.9);
+  color: #00bcd4;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  white-space: nowrap;
+}
+.device-icon:hover::after {
+  opacity: 1;
+}
+
+.device-icon.on {
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+@keyframes pulseGlow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(0,188,212,0.5)); }
+  50% { filter: drop-shadow(0 0 14px rgba(0,188,212,0.9)); }
+}
+
+.camera-popup.show {
+  animation: popupFade 0.25s ease-out;
+}
+@keyframes popupFade {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.device-status {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(25, 28, 33, 0.95);
+  padding: 20px 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,188,212,0.3);
+  color: #00bcd4;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.spinner {
+  border: 3px solid rgba(0,188,212,0.3);
+  border-top: 3px solid #00bcd4;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #1b1f25;
+}
+
+/* Miglior fluidità per icone */
+.device-icon {
+  transition: transform 0.2s ease, filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* Glow più dolce */
+.device-icon.on {
+  animation: pulseGlow 2.4s infinite ease-in-out;
+}
+@keyframes pulseGlow {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(0,188,212,0.4)); }
+  50% { filter: drop-shadow(0 0 12px rgba(0,188,212,0.8)); }
+}
+
+.device-icon.loading {
+  opacity: 0.5;
+  filter: drop-shadow(0 0 4px rgba(0,188,212,0.4));
+  animation: blink 1.2s infinite ease-in-out;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.2; }
+}
