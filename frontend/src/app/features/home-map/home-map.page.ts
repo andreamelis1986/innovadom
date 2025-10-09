@@ -25,6 +25,7 @@ export class HomeMapPage implements OnInit {
     devices: Device[] = [];
     loadingDevice = false;
     currentTemperature = 22;
+    loadingDeviceId: number | null = null; // 🆕 quale device sta caricando
 
     private lastToastTime = 0;
     private lastOfflineAlert: string | null = null;
@@ -141,9 +142,12 @@ export class HomeMapPage implements OnInit {
                 this.devicesSvc.checkDeviceOnline(light.id!).subscribe({
                     next: (res) => {
                         if (!res.online) {
-                            // ❌ Luce offline → messaggio e ripristino stato originale
                             this.showAlert(`${light.name} è offline`);
-                            light.status = oldStatus;
+                            // 🔧 aggiornamento fuori dal ciclo Angular
+                            setTimeout(() => {
+                                light.status = oldStatus;
+                                this.cdr.detectChanges();
+                            });
                             return;
                         }
 
@@ -151,18 +155,26 @@ export class HomeMapPage implements OnInit {
                         const newStatus = allOn ? 'off' : 'on';
                         this.devicesSvc.updateDeviceStatus(light.id!, newStatus).subscribe({
                             next: () => {
-                                light.status = newStatus;
+                                setTimeout(() => {
+                                    light.status = newStatus;
+                                    this.cdr.detectChanges();
+                                });
                             },
                             error: () => {
                                 this.showAlert(`Errore aggiornamento ${light.name}`);
-                                light.status = oldStatus;
+                                setTimeout(() => {
+                                    light.status = oldStatus;
+                                    this.cdr.detectChanges();
+                                });
                             },
                         });
                     },
                     error: () => {
-                        // ⚠️ Errore connessione → messaggio + ripristino stato
                         this.showAlert(`Impossibile contattare ${light.name}`);
-                        light.status = oldStatus;
+                        setTimeout(() => {
+                            light.status = oldStatus;
+                            this.cdr.detectChanges();
+                        });
                     },
                 });
             });
