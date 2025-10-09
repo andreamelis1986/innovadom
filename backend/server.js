@@ -1,6 +1,49 @@
+// ====================================================
+// 🔹 Import principali
+// ====================================================
 const express = require('express');
 const cors = require('cors');
 const { WebSocketServer } = require('ws');
+const Stream = require('node-rtsp-stream');
+
+// ====================================================
+// 🔹 RTSP → WebSocket (Provision ISR)
+// ====================================================
+const streamUrl = 'rtsp://192.168.1.9:554/profile1'; // <-- qui il tuo IP corretto
+
+const stream = new Stream({
+  name: 'provision',
+  streamUrl: 'rtsp://192.168.1.30:554/profile1',
+  wsPort: 9999,
+  ffmpegOptions: {
+    '-stats': '',
+    '-r': 25,
+    '-fflags': 'nobuffer',
+    '-flags': 'low_delay',
+    '-probesize': '32',
+    '-analyzeduration': '0',
+    '-flush_packets': '1',
+    '-rtsp_transport': 'tcp', // ✅ usa TCP, più stabile
+    '-pix_fmt': 'yuv420p',
+    '-b:v': '2000k',
+    '-q:v': 2,
+    // ✅ SCALA A 1280x720 per compatibilità + padding pari
+    '-vf': 'scale=1280:720:force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2,setpts=PTS-STARTPTS',
+    '-preset': 'veryfast',
+    '-an': '',
+    '-strict': '-2' // permette forzatura MPEG1
+  }
+});
+
+
+if (stream.mpeg1Muxer && stream.mpeg1Muxer.stderr) {
+  stream.mpeg1Muxer.stderr.on('data', data => {
+    const msg = data.toString();
+    if (msg.includes('frame=')) console.log('🎥 Frame ricevuto:', msg.trim());
+  });
+}
+
+console.log('🎥 Stream RTSP avviato → ws://localhost:9999');
 
 // ====================================================
 // IMPORT ROUTES
@@ -8,9 +51,11 @@ const { WebSocketServer } = require('ws');
 const shellyRoutes = require('./routes/shelly');
 const huaweiRoutes = require('./routes/huawei');
 const deviceRoutes = require('./routes/devices');
+console.log('📦 File routes/device.js importato');
 
-console.log('📦 File routes/device.js importato'); // 👈 Verifica che il file venga caricato
-
+// ====================================================
+// EXPRESS SERVER
+// ====================================================
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -26,11 +71,9 @@ app.get('/api/test', (req, res) => {
 // ====================================================
 // REGISTER ROUTES
 // ====================================================
-// ✅ Metti PRIMA devices e huawei, POI shelly
 app.use('/api/devices', deviceRoutes);
 app.use('/api/huawei', huaweiRoutes);
 app.use('/api', shellyRoutes);
-
 
 // ====================================================
 // AUTO LOG REQUESTS
@@ -47,6 +90,7 @@ const PORT = 3000;
 const server = app.listen(PORT, () => {
   console.log(`✅ Backend attivo su http://localhost:${PORT}`);
   console.log('📜 Server Express avviato correttamente\n');
+  console.log('🎥 Stream Provision attivo su ws://localhost:9999');
 });
 
 // ====================================================

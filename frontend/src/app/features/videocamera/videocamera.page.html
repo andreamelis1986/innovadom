@@ -1,22 +1,3 @@
-<!-- 🔹 Contenuto principale -->
-<div class="video-grid-container">
-  <div class="video-grid">
-    <div class="video-card" *ngFor="let cam of cameras">
-      <div class="video-header">
-        <i class="fas fa-video camera-icon"></i>
-        <span>{{ cam.name }}</span>
-        <span class="status" [class.online]="cam.online" [class.offline]="!cam.online">
-          {{ cam.online ? 'Online' : 'Offline' }}
-        </span>
-      </div>
-
-      <div class="video-body">
-        <video *ngIf="cam.streamUrl && cam.online" [src]="cam.streamUrl" autoplay muted controls></video>
-        <div *ngIf="!cam.streamUrl || !cam.online" class="video-placeholder">
-          <i class="fas fa-video-slash"></i>
-          <p>Nessun segnale</p>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="camera-container">
+  <canvas id="provisionCam"></canvas>
 </div>
