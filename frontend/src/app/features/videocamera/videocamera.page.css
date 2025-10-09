@@ -1,63 +1,55 @@
 .videocam-page {
-  background: #10151b;
+  background: radial-gradient(circle at top left, #0d1117, #0a0e13 70%);
   min-height: 100vh;
-  padding: 30px;
-  font-family: 'Poppins', sans-serif;
+  padding: 20px 40px;
+  font-family: "Poppins", sans-serif;
   color: #fff;
+  overflow: hidden;
 }
 
-.title {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: #00c6ff;
-  text-align: center;
-}
-
-.loading {
+/* === CONTROL BAR === */
+.controls-bar {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 50vh;
-  color: #00b4ff;
-  font-size: 18px;
-  gap: 12px;
-}
-.loading i {
-  font-size: 28px;
-  animation: spin 1.2s linear infinite;
-}
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  justify-content: flex-end;
+  margin-bottom: 20px;
 }
 
+.btn-full-all {
+  background: linear-gradient(90deg, #00c6ff, #0072ff);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-full-all:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 198, 255, 0.6);
+}
+
+/* === GRID CAMERAS === */
 .camera-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   gap: 24px;
-  justify-items: center;
 }
 
 .camera-card {
-  background: rgba(30, 36, 45, 0.95);
-  border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
-  width: 100%;
-  max-width: 420px;
+  background: rgba(25, 30, 40, 0.7);
+  border-radius: 20px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .camera-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  border-color: rgba(0, 198, 255, 0.6);
 }
 
 .camera-header {
@@ -69,49 +61,22 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.camera-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.camera-icon {
-  font-size: 18px;
-  color: #00b4ff;
-}
-
-.camera-name {
-  font-size: 15px;
-  font-weight: 500;
-  color: #fff;
-}
-
-.camera-status {
-  font-size: 14px;
-  color: #9ea7b3;
-}
-
-.camera-status.online {
-  color: #4fff83;
-}
-
-.camera-card.offline {
-  border: 1px solid rgba(255, 0, 0, 0.3);
-  filter: grayscale(0.6);
-}
-
 .camera-body {
   position: relative;
   background: #000;
-  height: 220px;
+  aspect-ratio: 16 / 9; /* ✅ Mantiene proporzione 16:9 */
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  border-radius: 0 0 16px 16px;
 }
 
 canvas {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   display: block;
   background: #000;
 }
@@ -120,56 +85,93 @@ canvas {
   position: absolute;
   top: 10px;
   left: 12px;
-  background: #ff2d55;
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
   color: #fff;
   font-size: 12px;
   font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 4px;
-  letter-spacing: 1px;
-  animation: pulse 1.2s infinite;
+  padding: 4px 8px;
+  border-radius: 6px;
+  animation: pulse 1.3s infinite;
 }
 
 @keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.4;
-  }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
 }
 
-.offline-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(15, 20, 25, 0.8);
+/* === FULLSCREEN VIEW === */
+.fullscreen-view {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: #000;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #ff5c5c;
-  font-size: 16px;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.camera-full {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.camera-full canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.btn-exit {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  z-index: 2000;
+  transition: background 0.2s;
+}
+.btn-exit:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.camera-title {
+  position: absolute;
+  bottom: 25px;
+  left: 25px;
+  font-size: 18px;
   font-weight: 600;
-  gap: 8px;
-  border-radius: 0 0 16px 16px;
+  color: #fff;
+  background: rgba(0,0,0,0.4);
+  padding: 8px 14px;
+  border-radius: 8px;
 }
 
-.offline-overlay i {
-  font-size: 22px;
-  color: #ff5c5c;
-  animation: blink 1.5s infinite;
+.live-badge.big {
+  top: 20px;
+  left: 25px;
+  font-size: 14px;
+  padding: 6px 12px;
 }
 
-@keyframes blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+.camera-grid[hidden] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.camera-grid {
+  transition: opacity 0.3s ease;
 }

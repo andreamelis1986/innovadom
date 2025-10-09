@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, ViewChild, computed } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, ViewChild, ElementRef, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DeviceService } from '../../services/device.service';
@@ -17,6 +17,7 @@ export class HomeMapPage implements OnInit {
     constructor(private cdr: ChangeDetectorRef) { }
 
     @ViewChild(ToastComponent) toast!: ToastComponent;
+    @ViewChild('cameraCanvas') cameraCanvas!: ElementRef<HTMLCanvasElement>;
 
     currentTime = '';
     currentDate = '';
@@ -25,10 +26,12 @@ export class HomeMapPage implements OnInit {
     devices: Device[] = [];
     loadingDevice = false;
     currentTemperature = 22;
-    loadingDeviceId: number | null = null; // 🆕 quale device sta caricando
+    loadingDeviceId: number | null = null;
 
     private lastToastTime = 0;
     private lastOfflineAlert: string | null = null;
+    private player: any = null;
+    streamActive = false;
 
     /** ✅ Computed reattivi */
     lightsOn = computed(() =>
@@ -129,21 +132,19 @@ export class HomeMapPage implements OnInit {
         device.status = device.status === 'on' ? 'off' : 'on';
     }
 
-    /** 🔹 Accende o spegne tutte le luci, controllando connessione e ripristinando stato */
+    /** 🔹 Accende/spegne tutte le luci */
     toggleAllLights(): void {
         const allOn = this.areAllLightsOn();
-
         this.devices
             .filter((d) => d.type === 'light')
             .forEach((light) => {
-                const oldStatus = light.status; // 🔹 salva stato originale
-                light.status = 'loading'; // 🌀 stato temporaneo visivo
+                const oldStatus = light.status;
+                light.status = 'loading';
 
                 this.devicesSvc.checkDeviceOnline(light.id!).subscribe({
                     next: (res) => {
                         if (!res.online) {
                             this.showAlert(`${light.name} è offline`);
-                            // 🔧 aggiornamento fuori dal ciclo Angular
                             setTimeout(() => {
                                 light.status = oldStatus;
                                 this.cdr.detectChanges();
@@ -151,7 +152,6 @@ export class HomeMapPage implements OnInit {
                             return;
                         }
 
-                        // ✅ Luce online → aggiorna stato effettivo
                         const newStatus = allOn ? 'off' : 'on';
                         this.devicesSvc.updateDeviceStatus(light.id!, newStatus).subscribe({
                             next: () => {
@@ -193,9 +193,79 @@ export class HomeMapPage implements OnInit {
     openCamera(camera: Device): void {
         this.selectedShutter = null;
         this.selectedCamera = camera;
+
+        // 🔹 Se esiste già un player attivo → lo fermiamo
+        if ((window as any).activePlayer) {
+            try {
+                (window as any).activePlayer.destroy();
+                console.log('🧹 Player precedente chiuso');
+            } catch (err) {
+                console.warn('⚠️ Errore chiusura player precedente:', err);
+            }
+        }
+
+        // 🔹 Carica la libreria JSMpeg dal CDN se non è già presente
+        const loadJSMpeg = (): Promise<void> => {
+            return new Promise((resolve, reject) => {
+                if ((window as any).JSMpeg) {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/gh/phoboslab/jsmpeg@master/jsmpeg.min.js';
+                script.onload = () => {
+                    console.log('✅ JSMpeg caricato dal CDN');
+                    resolve();
+                };
+                script.onerror = reject;
+                document.body.appendChild(script);
+            });
+        };
+
+        loadJSMpeg().then(() => {
+            setTimeout(() => {
+                const canvas = this.cameraCanvas?.nativeElement;
+                if (!canvas) {
+                    console.warn('⚠️ Canvas non trovato');
+                    return;
+                }
+
+                // 🔹 Usa la porta WebSocket corretta della telecamera
+                const wsUrl = `ws://localhost:${camera.ws_port}`;
+                console.log('🎥 Avvio stream da', wsUrl);
+
+                try {
+                    const player = new (window as any).JSMpeg.Player(wsUrl, {
+                        canvas,
+                        autoplay: true,
+                        audio: false,
+                        loop: true
+                    });
+
+                    // ✅ Salva il player globale per poterlo distruggere al cambio camera
+                    (window as any).activePlayer = player;
+                    console.log('✅ Stream avviato su', wsUrl);
+                } catch (err) {
+                    console.error('❌ Errore avvio stream:', err);
+                }
+
+                this.cdr.detectChanges();
+            }, 400);
+        });
     }
 
     closeCamera(): void {
+        // Chiude anche il player corrente se esiste
+        if ((window as any).activePlayer) {
+            try {
+                (window as any).activePlayer.destroy();
+                (window as any).activePlayer = null;
+                console.log('🛑 Player distrutto correttamente');
+            } catch (err) {
+                console.warn('⚠️ Errore distruzione player:', err);
+            }
+        }
+
         this.selectedCamera = null;
     }
 
@@ -256,7 +326,7 @@ export class HomeMapPage implements OnInit {
     }
 
     closeAllPopups(): void {
-        this.selectedCamera = null;
+        this.closeCamera();
         this.selectedShutter = null;
     }
 

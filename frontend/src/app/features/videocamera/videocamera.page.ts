@@ -17,12 +17,15 @@ export class VideocameraPage implements OnInit {
   loading = true;
   private started = new Set<number>(); // stream già avviati
   private updateSub?: Subscription;
+  fullscreenCam: Camera | null = null;
+  private fullscreenPlayer?: any;
+  private players: Map<number, any> = new Map();
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     @Inject(VideocameraService) private svc: VideocameraService, // ✅ @Inject specificato
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -76,16 +79,18 @@ export class VideocameraPage implements OnInit {
     if (!canvas || !(window as any).JSMpeg) return;
 
     try {
-      new (window as any).JSMpeg.Player(`ws://localhost:${cam.ws_port}`, {
+      const player = new (window as any).JSMpeg.Player(`ws://localhost:${cam.ws_port}`, {
         canvas,
         autoplay: true,
         audio: false
       });
+      this.players.set(cam.id, player);
       this.started.add(cam.id);
     } catch (e) {
       console.error(`❌ Errore stream ${cam.name}:`, e);
     }
   }
+
 
   private loadJSMpegScript(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -113,5 +118,66 @@ export class VideocameraPage implements OnInit {
 
   ngOnDestroy(): void {
     this.updateSub?.unsubscribe();
+    this.players.forEach((p) => {
+      if (p && p.destroy) p.destroy();
+    });
+    this.players.clear();
   }
+
+  // 🔹 Apre una telecamera in fullscreen
+  openFullscreen(cam: Camera) {
+    this.fullscreenCam = cam;
+    setTimeout(() => this.startStreamFull(cam), 50);
+  }
+
+  // 🔹 Esce dalla vista fullscreen
+  closeFullscreen() {
+    if (this.fullscreenPlayer && this.fullscreenPlayer.destroy) {
+      this.fullscreenPlayer.destroy();
+      this.fullscreenPlayer = undefined;
+    }
+    this.fullscreenCam = null;
+
+    // 🧹 Chiude e riavvia tutti i flussi
+    // ✅ Non distrugge gli altri stream, li lascia attivi
+    this.fullscreenCam = null;
+    this.cdr.detectChanges();
+
+    // Se il player fullscreen esiste, distruggilo
+    if (this.fullscreenPlayer && this.fullscreenPlayer.destroy) {
+      this.fullscreenPlayer.destroy();
+      this.fullscreenPlayer = undefined;
+    }
+  }
+
+  // 🔹 Mostra tutte le telecamere in fullscreen
+  toggleFullscreenAll() {
+    const elem = document.documentElement;
+    if (!document.fullscreenElement) {
+      elem.requestFullscreen().catch(() => { });
+    } else {
+      document.exitFullscreen().catch(() => { });
+    }
+  }
+
+  private startStreamFull(cam: Camera): void {
+    const canvas = document.getElementById(`cam-full-${cam.id}`) as HTMLCanvasElement;
+    if (!canvas || !(window as any).JSMpeg) return;
+
+    try {
+      // stop eventuale player precedente
+      if (this.fullscreenPlayer && this.fullscreenPlayer.destroy) {
+        this.fullscreenPlayer.destroy();
+      }
+
+      this.fullscreenPlayer = new (window as any).JSMpeg.Player(`ws://localhost:${cam.ws_port}`, {
+        canvas,
+        autoplay: true,
+        audio: false
+      });
+    } catch (e) {
+      console.error(`❌ Errore stream fullscreen ${cam.name}:`, e);
+    }
+  }
+
 }

@@ -217,4 +217,31 @@ router.get('/:id/ping', async (req, res) => {
   }
 });
 
+// ======================================================
+// 🔍 CHECK - Verifica stato dispositivo da DB
+// (utile per telecamere RTSP)
+// ======================================================
+router.get('/:id/check', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT status, type FROM devices WHERE id = ?', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ online: false });
+
+    const dev = rows[0];
+    // ✅ Se è una telecamera → leggi lo stato dal DB (aggiornato da cameraMonitor.js)
+    if (dev.type === 'camera') {
+      const online = dev.status === 'active';
+      return res.json({ online });
+    }
+
+    // 🔹 Per altri dispositivi (Shelly, ecc.) → fai il ping HTTP classico
+    const [row2] = await pool.query('SELECT ip FROM devices WHERE id = ?', [req.params.id]);
+    const online = await isDeviceOnline(row2.ip);
+    res.json({ online });
+
+  } catch (err) {
+    console.error('❌ Errore check dispositivo:', err.message);
+    res.status(500).json({ online: false });
+  }
+});
+
 module.exports = router;
