@@ -1,7 +1,7 @@
 const { spawn } = require('child_process');
 const { WebSocketServer } = require('ws');
 
-const streams = new Map(); // mappa porta → processo ffmpeg
+const streams = new Map();
 
 function startStream(rtspUrl, wsPort) {
   if (streams.has(wsPort)) {
@@ -9,7 +9,7 @@ function startStream(rtspUrl, wsPort) {
     return;
   }
 
-  console.log(`🎥 Avvio stream RTSP → ws://localhost:${wsPort}`);
+  console.log(`🎥 Avvio stream da ${rtspUrl} → ws://localhost:${wsPort}`);
   const wss = new WebSocketServer({ port: wsPort });
 
   const ffmpeg = spawn('ffmpeg', [
@@ -17,7 +17,7 @@ function startStream(rtspUrl, wsPort) {
     '-i', rtspUrl,
     '-f', 'mpegts',
     '-codec:v', 'mpeg1video',
-    '-r', '30',
+    '-r', '25',
     '-b:v', '800k',
     '-bf', '0',
     '-muxdelay', '0.1',
@@ -31,11 +31,16 @@ function startStream(rtspUrl, wsPort) {
   });
 
   ffmpeg.stderr.on('data', (data) => {
-    // opzionale: mostrare log ffmpeg
+    const msg = data.toString();
+    if (msg.includes('frame=')) {
+      process.stdout.write(msg); // mostra avanzamento
+    } else if (msg.includes('error') || msg.includes('Failed')) {
+      console.error('❌ FFmpeg:', msg);
+    }
   });
 
-  ffmpeg.on('close', () => {
-    console.log(`❌ Stream terminato sulla porta ${wsPort}`);
+  ffmpeg.on('close', (code) => {
+    console.log(`❌ Stream terminato (porta ${wsPort}) - codice ${code}`);
     streams.delete(wsPort);
   });
 
@@ -44,7 +49,7 @@ function startStream(rtspUrl, wsPort) {
 
 function stopAllStreams() {
   streams.forEach(({ process }, port) => {
-    console.log(`🛑 Arresto stream porta ${port}`);
+    console.log(`🛑 Arresto stream su porta ${port}`);
     process.kill('SIGINT');
   });
   streams.clear();
