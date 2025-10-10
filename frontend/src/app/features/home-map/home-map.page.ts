@@ -89,34 +89,63 @@ export class HomeMapPage implements OnInit {
         }
     }
 
-    /** 🔹 Gestione click icona */
+    /** 🔹 Gestione click icona dispositivo */
     handleDeviceClick(device: Device): void {
-        if (!device || !device.id || this.loadingDevice) return;
+        if (!device || !device.id || this.loadingDevice) return; // ⛔ evita doppi click
+
         this.loadingDevice = true;
+        this.loadingDeviceId = device.id;
         this.closeAllPopups();
         this.cdr.detectChanges();
 
+        const startTime = Date.now(); // 🕒 momento d’inizio verifica
+
         this.devicesSvc.checkDeviceOnline(device.id).subscribe({
             next: (res) => {
-                this.loadingDevice = false;
+                const elapsed = Date.now() - startTime;
+                const remaining = Math.max(0, 1000 - elapsed); // ⏱️ minimo 1 s visivo
+
+                const finalize = () => {
+                    this.loadingDevice = false;
+                    this.loadingDeviceId = null;
+                    this.cdr.detectChanges();
+                };
+
                 if (!res.online) {
-                    if (this.lastOfflineAlert !== device.name) {
-                        this.showAlert(`${device.name} è offline`);
-                        this.lastOfflineAlert = device.name;
-                        setTimeout(() => (this.lastOfflineAlert = null), 2500);
-                    }
+                    setTimeout(() => {
+                        if (this.lastOfflineAlert !== device.name) {
+                            this.showAlert(`${device.name} è offline`);
+                            this.lastOfflineAlert = device.name;
+                            setTimeout(() => (this.lastOfflineAlert = null), 2500);
+                        }
+                        finalize();
+                    }, remaining);
                     return;
                 }
 
-                if (device.type === 'camera') this.openCamera(device);
-                else if (device.type === 'shutter') this.openShutterPopup(device);
-                else this.toggleDevice(device);
-
-                this.cdr.detectChanges();
+                // ✅ Se è online → apri la card giusta dopo durata minima
+                setTimeout(() => {
+                    if (device.type === 'camera') {
+                        this.openCamera(device);
+                    } else if (device.type === 'shutter') {
+                        this.openShutterPopup(device);
+                    } else {
+                        this.toggleDevice(device);
+                    }
+                    finalize();
+                }, remaining);
             },
+
             error: (err) => {
                 this.loadingDevice = false;
-                this.showAlert(`${device.name} non risponde`);
+                this.loadingDeviceId = null;
+
+                if (err.message === 'timeout') {
+                    this.showAlert(`${device.name} non risponde`);
+                } else {
+                    this.showAlert(`Impossibile contattare ${device.name}`);
+                }
+
                 this.cdr.detectChanges();
             },
         });

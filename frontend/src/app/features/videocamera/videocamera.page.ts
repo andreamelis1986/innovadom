@@ -1,13 +1,14 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { VideocameraService, Camera } from '../../services/videocamera.service';
 import { Subscription } from 'rxjs';
+import { ToastComponent } from '../../shared/toast/toast.component';
 
 @Component({
   selector: 'app-videocamera',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule, HttpClientModule, ToastComponent], // ✅ aggiunto ToastComponent
   templateUrl: './videocamera.page.html',
   styleUrls: ['./videocamera.page.css'],
   providers: [VideocameraService] // ✅ garantisce che Angular sappia cosa iniettare
@@ -20,6 +21,9 @@ export class VideocameraPage implements OnInit {
   fullscreenCam: Camera | null = null;
   private fullscreenPlayer?: any;
   private players: Map<number, any> = new Map();
+  gridClass = 'cols-1'; // classe CSS da applicare
+
+  @ViewChild(ToastComponent) toast!: ToastComponent;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -40,6 +44,7 @@ export class VideocameraPage implements OnInit {
       next: (data: Camera[]) => {
         this.cameras = data;
         this.loading = false;
+        this.updateGridLayout(); // 🔹 imposta layout in base al numero di telecamere
         this.cdr.detectChanges();
 
         // avvia stream per quelle già online
@@ -52,6 +57,9 @@ export class VideocameraPage implements OnInit {
           const prev = cam.status;
           cam.status = u.status;
           this.cdr.detectChanges();
+
+          // 🔹 aggiorna layout in caso di variazioni
+          this.updateGridLayout();
 
           // se ora è online → avvia stream
           if (prev !== 'active' && u.status === 'active') {
@@ -126,6 +134,12 @@ export class VideocameraPage implements OnInit {
 
   // 🔹 Apre una telecamera in fullscreen
   openFullscreen(cam: Camera) {
+    // ⛔ Se è offline → non aprire e mostra toast
+    if (cam.status !== 'active') {
+      if (this.toast) this.toast.show(`${cam.name} è offline`, 3000);
+      return;
+    }
+
     this.fullscreenCam = cam;
     setTimeout(() => this.startStreamFull(cam), 50);
   }
@@ -179,5 +193,15 @@ export class VideocameraPage implements OnInit {
       console.error(`❌ Errore stream fullscreen ${cam.name}:`, e);
     }
   }
+
+  /** 🔹 Adatta la griglia al numero di telecamere */
+  private updateGridLayout(): void {
+    const count = this.cameras.length;
+    if (count <= 1) this.gridClass = 'cols-1';
+    else if (count === 2) this.gridClass = 'cols-2';
+    else if (count <= 4) this.gridClass = 'cols-3';
+    else this.gridClass = 'cols-4';
+  }
+
 
 }

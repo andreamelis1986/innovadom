@@ -1,0 +1,61 @@
+<div class="devices-container">
+
+  <div class="devices-grid" *ngIf="devicesSvc.devices().length > 0; else noDevices">
+    <mat-card class="device-card" *ngFor="let d of devicesSvc.devices()">
+      <div class="device-header">
+        <i class="device-icon"
+           [ngClass]="{
+             'fa-lightbulb': d.type === 'light',
+             'fa-video': d.type === 'camera',
+             'fa-temperature-half': d.type === 'climate',
+             'fa-person-booth': d.type === 'shutter',
+             'fa-wave-square': d.type === 'sensor'
+           }"
+           [style.color]="d.status === 'on' ? '#4CAF50' : '#888'">
+        </i>
+        <div>
+          <h3>{{ d.name }}</h3>
+          <p class="device-type">{{ d.type | uppercase }}</p>
+        </div>
+      </div>
+
+      <div class="device-body">
+        <p class="status-label">
+          Stato:
+          <span [class.on]="d.status === 'on'" [class.off]="d.status === 'off'">
+            {{ d.status }}
+          </span>
+        </p>
+
+        <!-- 🔦 Luci -->
+        <div *ngIf="d.type === 'light'" class="device-actions">
+          <button mat-raised-button color="primary"
+                  (click)="toggleDevice(d.id!)">
+            {{ d.status === 'on' ? 'Spegni' : 'Accendi' }}
+          </button>
+        </div>
+
+        <!-- 🪟 Serrande -->
+        <div *ngIf="d.type === 'shutter'" class="device-actions">
+          <p>Posizione: {{ d.position ?? 0 }}%</p>
+          <mat-slider
+            min="0"
+            max="100"
+            step="1"
+            thumbLabel
+            [(ngModel)]="d.position"
+            (ngModelChange)="setPosition(d.id!, $event)">
+            <input matSliderThumb>
+          </mat-slider>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+
+  <ng-template #noDevices>
+    <div class="no-devices">
+      <i class="fas fa-plug"></i>
+      <p>Nessun dispositivo trovato</p>
+    </div>
+  </ng-template>
+</div>

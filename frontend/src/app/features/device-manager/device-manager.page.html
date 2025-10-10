@@ -1,27 +1,42 @@
 <div class="dashboard-container">
   <aside class="sidebar fixed-sidebar">
-    <div *ngFor="let s of stats" class="stat-card compact">
-      <div class="stat-icon">
-        <i [ngClass]="{
-          'fas fa-microchip': s.label === 'Totali',
-          'fas fa-signal': s.label === 'Online',
-          'fas fa-plug': s.label === 'Offline',
-          'fas fa-lightbulb': s.label === 'Luci'
-        }"></i>
+    <div *ngFor="let s of stats" class="stat-card compact" [class.active]="s.value > 0">
+      <div class="stat-top">
+        <div class="stat-icon" [ngClass]="{
+      'totali': s.label === 'Totali',
+      'online': s.label === 'Online',
+      'offline': s.label === 'Offline',
+      'luci': s.label === 'Luci'
+    }">
+          <i [ngClass]="{
+        'fas fa-microchip': s.label === 'Totali',
+        'fas fa-signal': s.label === 'Online',
+        'fas fa-plug': s.label === 'Offline',
+        'fas fa-lightbulb': s.label === 'Luci'
+      }"></i>
+        </div>
+
+        <div class="stat-value">
+          <svg width="70" height="70" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" stroke="#1e293b" stroke-width="10" fill="none" />
+            <circle cx="50" cy="50" r="45" [attr.stroke]="
+            s.label === 'Online' ? '#00ffbf' :
+            s.label === 'Offline' ? '#ff5555' :
+            s.label === 'Luci' ? '#00e0ff' : '#a0aec0'
+          " stroke-width="10" fill="none" stroke-linecap="round" [attr.stroke-dasharray]="2 * Math.PI * 45"
+              [attr.stroke-dashoffset]="(2 * Math.PI * 45) - (s.perc * 2.8)"
+              style="transition: stroke-dashoffset 0.6s ease" />
+            <text x="50" y="55" text-anchor="middle" font-size="14" fill="#fff" font-weight="bold">
+              {{ s.value }}
+            </text>
+          </svg>
+        </div>
       </div>
 
-      <svg width="70" height="70" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="45" stroke="#1e293b" stroke-width="10" fill="none" />
-        <circle cx="50" cy="50" r="45" stroke="#00e0ff" stroke-width="10" fill="none" stroke-linecap="round"
-          [attr.stroke-dasharray]="2 * Math.PI * 45" [attr.stroke-dashoffset]="(2 * Math.PI * 45) - (s.perc * 2.8)"
-          style="transition: stroke-dashoffset 0.6s ease" />
-        <text x="50" y="55" text-anchor="middle" font-size="14" fill="#fff" font-weight="bold">
-          {{ s.value }}
-        </text>
-      </svg>
-
-      <h5>{{ s.label }}</h5>
-      <p>{{ s.desc }}</p>
+      <div class="stat-info">
+        <h5>{{ s.label }}</h5>
+        <p>{{ s.desc }}</p>
+      </div>
     </div>
   </aside>
 
@@ -35,17 +50,16 @@
     <div *ngIf="successMessage && !showAddForm" class="message success show">
       {{ successMessage }}
     </div>
-
     <div class="devices-grid">
-      <div *ngFor="let d of devices()" class="device-card" [class.on]="d.status === 'on'">
+      <div *ngFor="let d of devices()" class="device-card" [class.on]="d.status === 'on'" (click)="openEditDevice(d)">
         <div class="card-header">
           <div class="card-header-left">
             <i [ngClass]="{
-              'fa-solid fa-lightbulb': d.type === 'light',
-              'fa-solid fa-temperature-three-quarters': d.type === 'climate',
-              'fa-solid fa-video': d.type === 'camera',
-              'fa-solid fa-window-maximize': d.type === 'shutter'
-            }" class="device-icon"></i>
+        'fa-regular fa-lightbulb': d.type === 'light',
+        'fa-solid fa-fan': d.type === 'climate',
+        'fa-solid fa-video': d.type === 'camera',
+        'fa-solid fa-shutters': d.type === 'shutter'
+      }" class="device-icon"></i>
             <h4>{{ d.name || 'Senza nome' }}</h4>
           </div>
 
@@ -54,11 +68,10 @@
             <span class="switch-slider"></span>
           </label>
         </div>
-
         <p><strong>Tipo:</strong> {{ d.type }}</p>
         <p><strong>IP:</strong> {{ d.ip || '-' }}</p>
 
-        <button *ngIf="d.id" (click)="openDeleteConfirm(d)" class="delete-btn-modern">
+        <button *ngIf="d.id" (click)="openDeleteConfirm(d); $event.stopPropagation()" class="delete-btn-modern">
           <i class="fa-solid fa-trash"></i> Elimina
         </button>
       </div>
@@ -83,7 +96,6 @@
     <div class="add-device-modal">
       <h3 class="modal-title">Nuovo Dispositivo</h3>
 
-      <!-- ✅ Messaggi subito sotto il titolo -->
       <div class="message-wrapper">
         <div *ngIf="errorMessage" class="message error show">{{ errorMessage }}</div>
         <div *ngIf="successMessage" class="message success show">{{ successMessage }}</div>
@@ -92,31 +104,73 @@
       <form (ngSubmit)="addDevice()" class="add-form">
         <input type="text" [(ngModel)]="newDevice.name" name="name" placeholder="Nome dispositivo *" required />
         <select [(ngModel)]="newDevice.type" name="type">
-          <option value="light"><i class="fa-solid fa-lightbulb"></i> Luce</option>
-          <option value="climate"><i class="fa-solid fa-temperature-three-quarters"></i> Clima</option>
-          <option value="camera"><i class="fa-solid fa-video"></i> Telecamera</option>
-          <option value="shutter"><i class="fa-solid fa-window-maximize"></i> Serranda</option>
+          <option value="light">💡 Luce</option>
+          <option value="climate">🌡️ Clima</option>
+          <option value="camera">🎥 Telecamera</option>
+          <option value="shutter">🪟 Serranda</option>
         </select>
 
-<input type="text" [(ngModel)]="newDevice.ip" name="ip" placeholder="Indirizzo IP *" maxlength="15" required />
-
+        <input type="text" [(ngModel)]="newDevice.ip" name="ip" placeholder="Indirizzo IP *" maxlength="15" required />
 
         <button type="submit" class="confirm-btn" [disabled]="isAdding">Conferma</button>
         <button type="button" class="cancel-btn" (click)="closeAddDeviceForm()">Annulla</button>
       </form>
 
-      <div class="map-container" (click)="selectPosition($event)">
+      <div class="map-container no-zoom" (click)="selectPosition($event)">
         <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
-        <div class="device-icon preview" *ngIf="newDevice.top && newDevice.left" [style.top.%]="newDevice.top"
-          [style.left.%]="newDevice.left">
+        <div class="device-icon preview" *ngIf="newDevice.top != null && newDevice.left != null"
+          [style.top.%]="newDevice.top" [style.left.%]="newDevice.left">
           <i [ngClass]="{
           'fa-solid fa-lightbulb': newDevice.type === 'light',
-          'fa-solid fa-temperature-high': newDevice.type === 'climate',
+          'fa-solid fa-fan': newDevice.type === 'climate',
           'fa-solid fa-video': newDevice.type === 'camera',
           'fa-solid fa-window-maximize': newDevice.type === 'shutter'
         }"></i>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ✅ MODALE MODIFICA DISPOSITIVO (fuori da quella di aggiunta) -->
+<div *ngIf="editingDevice as ed" class="add-device-overlay show">
+  <div class="add-device-modal">
+    <h3 class="modal-title">Modifica Dispositivo</h3>
+
+    <div class="message-wrapper">
+      <div *ngIf="errorMessage" class="message error show">{{ errorMessage }}</div>
+      <div *ngIf="successMessage" class="message success show">{{ successMessage }}</div>
+    </div>
+
+    <form (ngSubmit)="saveEditedDevice()" class="add-form">
+      <input type="text" [(ngModel)]="ed.name" name="name" placeholder="Nome dispositivo *" required />
+      <select [(ngModel)]="ed.type" name="type">
+        <option value="light">💡 Luce</option>
+        <option value="climate">🌡️ Clima</option>
+        <option value="camera">🎥 Telecamera</option>
+        <option value="shutter">🪟 Serranda</option>
+      </select>
+      <input type="text" [(ngModel)]="ed.ip" name="ip" placeholder="Indirizzo IP *" maxlength="15" required />
+
+      <button type="submit" class="confirm-btn">Salva</button>
+      <button type="button" class="cancel-btn" (click)="closeEditDevice()">Annulla</button>
+    </form>
+
+<div class="map-container no-zoom" (click)="updatePosition($event)">
+  <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
+  <ng-container *ngIf="editingDevice as ed">
+    <div class="device-icon preview"
+         *ngIf="ed.top != null && ed.left != null"
+         [style.top.%]="ed.top"
+         [style.left.%]="ed.left">
+      <i [ngClass]="{
+        'fa-regular fa-lightbulb': ed.type === 'light',
+        'fa-solid fa-fan': ed.type === 'climate',
+        'fa-solid fa-video': ed.type === 'camera',
+        'fa-solid fa-window-maximize': ed.type === 'shutter'
+      }"></i>
+    </div>
+  </ng-container>
+</div>
+
   </div>
 </div>

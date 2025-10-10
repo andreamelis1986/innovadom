@@ -8,13 +8,9 @@
   </div>
 
   <!-- 🔹 Vista griglia -->
-<div [hidden]="fullscreenCam" class="camera-grid">
-    <div
-      *ngFor="let cam of cameras"
-      class="camera-card"
-      [class.offline]="cam.status !== 'active'"
-      (click)="openFullscreen(cam)"
-    >
+  <div [hidden]="fullscreenCam" class="camera-grid" [ngClass]="gridClass">
+    <div *ngFor="let cam of cameras" class="camera-card" [class.offline]="cam.status !== 'active'"
+      (click)="openFullscreen(cam)">
       <div class="camera-header">
         <div class="camera-info">
           <i class="fas fa-video camera-icon"></i>
@@ -49,3 +45,4 @@
   </div>
 
 </div>
+<app-toast #toast></app-toast>

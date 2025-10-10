@@ -1,31 +1,44 @@
 // server.js
 const express = require('express');
 const cors = require('cors');
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Rotte
+// ======================================================
+// 🔹 ROUTES API
+// ======================================================
 app.use('/api/devices', require('./routes/devices'));
 app.use('/api/cameras', require('./routes/cameras'));
 
+// ======================================================
+// 🔹 AVVIO SERVER HTTP
+// ======================================================
 const PORT = 3000;
 const server = app.listen(PORT, () => {
   console.log(`✅ Backend attivo su http://localhost:${PORT}`);
 });
 
-// 🔌 WS status hub
+
+// ======================================================
+// 🔹 STATUS HUB (gestione eventi tra backend e frontend)
+// ======================================================
 const { init: initStatusHub } = require('./services/statusHub');
-initStatusHub(server);
+initStatusHub(server); // mantiene compatibilità col tuo attuale sistema
 
-// 🔁 Scansione periodica (ogni 15s) per aggiornare lo stato in DB e notificare i client
-const { scanOnce } = require('./services/cameraMonitor');
-setInterval(() => {
-  scanOnce().catch(e => console.error('Periodic scan error:', e));
-}, 15000);
+// ======================================================
+// 🔹 MONITORAGGIO TELECAMERE
+// ======================================================
+const { startCameraMonitor } = require('./services/cameraMonitor');
 
-// Arresto pulito stream
+// Avvia il monitoraggio periodico (ping + aggiornamento stato)
+startCameraMonitor();
+
+// ======================================================
+// 🛑 ARRESTO PULITO STREAMING
+// ======================================================
 process.on('SIGINT', () => {
   console.log('\n🛑 Arresto server e flussi video...');
   require('./services/streamManager').stopAllStreams();

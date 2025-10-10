@@ -8,7 +8,7 @@ export class DeviceService {
   private apiUrl = 'http://localhost:3000/api/devices';
   devices = signal<Device[]>([]);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /** 🔹 Carica tutti i dispositivi dal DB */
   loadDevicesFromDB(): Observable<Device[]> {
@@ -116,4 +116,21 @@ export class DeviceService {
         catchError(() => throwError(() => new Error('timeout')))
       );
   }
+
+  /** 🔹 Carica dispositivi e aggiorna automaticamente la signal */
+  refreshDevices(): void {
+    this.http.get<Device[]>(this.apiUrl).subscribe({
+      next: (data) => {
+        this.devices.set(data);
+        console.log('✅ Dispositivi caricati e aggiornati nella signal', data);
+      },
+      error: (err) => console.error('❌ Errore caricamento dispositivi:', err)
+    });
+  }
+
+  /** 🔹 Aggiorna i dati completi di un dispositivo */
+  updateDevice(id: number, updatedData: Partial<Device>): Observable<Device> {
+    return this.http.put<Device>(`${this.apiUrl}/${id}`, updatedData);
+  }
+
 }

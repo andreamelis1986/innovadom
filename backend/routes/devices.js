@@ -6,29 +6,43 @@ const pool = require('../db'); // ✅ connessione MySQL
 const axios = require('axios'); // ✅ richieste HTTP verso dispositivi
 const { startStream } = require('../services/streamManager');
 const { scanOnce } = require('../services/cameraMonitor');
+const ping = require('ping'); // 🟢 Assicurati di averlo installato: npm i ping
 
 // 🧠 Funzione di controllo connessione dispositivo
 async function isDeviceOnline(ip) {
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 1200); // massimo 1.2s
-
-    // 🔹 prova prima /rpc/Shelly.GetStatus (nuovo firmware)
-    const res = await axios.get(`http://${ip}/rpc/Shelly.GetStatus`, {
-      timeout: 1200,
-      signal: controller.signal
+    // 🔹 1️⃣ Ping ICMP universale
+    const result = await ping.promise.probe(ip, {
+      timeout: 2, // secondi
+      // rimuoviamo il flag -c (non compatibile con Windows)
     });
 
-    clearTimeout(timeout);
-    return res.status === 200;
-  } catch {
-    try {
-      // 🔹 fallback per vecchi firmware
-      const res2 = await axios.get(`http://${ip}/status`, { timeout: 1200 });
-      return res2.status === 200;
-    } catch {
-      return false;
+    if (result.alive) {
+      return true; // ✅ risponde al ping → online
     }
+
+    // 🔹 2️⃣ Tentativo HTTP (solo dispositivi Shelly o simili)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1200);
+
+    try {
+      const res = await axios.get(`http://${ip}/rpc/Shelly.GetStatus`, {
+        timeout: 1200,
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      return res.status === 200;
+    } catch {
+      try {
+        const res2 = await axios.get(`http://${ip}/status`, { timeout: 1200 });
+        return res2.status === 200;
+      } catch {
+        return false;
+      }
+    }
+  } catch (err) {
+    console.error(`❌ Errore isDeviceOnline(${ip}):`, err.message);
+    return false;
   }
 }
 

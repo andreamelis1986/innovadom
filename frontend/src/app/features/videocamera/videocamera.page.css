@@ -175,3 +175,99 @@ canvas {
 .camera-grid {
   transition: opacity 0.3s ease;
 }
+
+/* === OVERLAY OFFLINE (centrato perfetto + professionale) === */
+.offline-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* ✅ centrato verticalmente e orizzontalmente */
+  background: rgba(10, 10, 10, 0.8);
+  border: 1px solid rgba(255, 75, 43, 0.25);
+  border-radius: 12px;
+  box-shadow: inset 0 0 25px rgba(255, 75, 43, 0.05);
+  backdrop-filter: blur(2px);
+  color: #ff4b2b;
+  text-align: center;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.offline-overlay i {
+  font-size: 40px;
+  color: #ff4b2b;
+  margin-bottom: 10px;
+  animation: blink 1.6s infinite ease-in-out;
+}
+
+.offline-overlay span {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #ff6a3d;
+}
+
+/* 🔸 Bordi pulsanti delicati */
+.offline-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 75, 43, 0.2);
+  animation: borderPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; transform: translateY(0); }
+  50% { opacity: 0.7; transform: translateY(-2px); }
+}
+
+@keyframes borderPulse {
+  0%, 100% { box-shadow: 0 0 0px rgba(255, 75, 43, 0); }
+  50% { box-shadow: 0 0 15px rgba(255, 75, 43, 0.35); }
+}
+
+
+/* === GRIGLIA DINAMICA === */
+.camera-grid {
+  display: grid;
+  gap: 24px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.camera-grid.cols-1 {
+  grid-template-columns: 1fr;
+}
+
+.camera-grid.cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.camera-grid.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.camera-grid.cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Adatta automaticamente in base alle dimensioni */
+@media (max-width: 1200px) {
+  .camera-grid.cols-3,
+  .camera-grid.cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .camera-grid {
+    grid-template-columns: 1fr;
+  }
+}

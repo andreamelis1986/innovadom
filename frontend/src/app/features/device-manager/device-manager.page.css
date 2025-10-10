@@ -34,16 +34,18 @@
 
 .stat-card {
   background: rgba(15, 20, 25, 0.85);
-  border-radius: 14px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 14px 12px 18px;
   text-align: center;
-  transition: 0.3s;
   box-shadow: 0 0 12px rgba(0, 224, 255, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .stat-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 0 18px rgba(0, 224, 255, 0.25);
+  box-shadow: 0 0 20px rgba(0, 224, 255, 0.25);
 }
 
 .stat-icon i {
@@ -86,44 +88,60 @@
 /* === DEVICE GRID === */
 .devices-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 26px;
+  padding-bottom: 40px;
 }
 
 .device-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 18px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 18px;
+  padding: 22px 20px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.35s ease;
   position: relative;
+  overflow: hidden;
 }
 
 .device-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0 18px rgba(0, 234, 255, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 0 25px rgba(0, 234, 255, 0.35);
 }
 
 .device-card.on {
-  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+  background: linear-gradient(180deg, rgba(0, 255, 170, 0.15), rgba(0, 255, 170, 0.05));
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+  border: 1px solid rgba(0, 255, 170, 0.25);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.device-card p {
+  font-size: 14px;
+  margin: 6px 0;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .card-header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.device-icon {
-  font-size: 22px;
-  color: #00eaff;
+  /* 🔹 Allinea verticalmente icona + testo */
+  justify-content: flex-start;
+  gap: 12px;
+  position: relative;
+  z-index: 2;
+  flex: 1 1 auto;
+  min-height: 32px;
 }
 
 /* === SWITCH MODERNO === */
@@ -174,20 +192,24 @@
 
 /* === BOTTONI === */
 .delete-btn-modern {
-  background: rgba(255, 80, 80, 0.15);
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: rgba(255, 80, 80, 0.12);
   color: #ff4d4d;
   border: 1px solid rgba(255, 80, 80, 0.4);
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-top: 8px;
-  font-weight: 500;
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 
 .delete-btn-modern:hover {
   background: rgba(255, 80, 80, 0.25);
-  transform: scale(1.03);
+  box-shadow: 0 0 12px rgba(255, 80, 80, 0.35);
+  transform: translateY(-2px);
 }
 
 /* === MODALE AGGIUNTA DISPOSITIVO (EFFETTO VETRO+CONTOUR GLOW) === */
@@ -247,34 +269,14 @@
   pointer-events: none;
 }
 
-/* === MAPPA INTERNA === */
-.map-container {
-  position: relative;
-  cursor: crosshair;
-  transition: opacity 0.5s ease;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: inset 0 0 25px rgba(0, 255, 191, 0.1);
-}
-
-.map-image {
-  width: 100%;
-  border-radius: 12px;
-  user-select: none;
-  transition: transform 0.4s ease;
-}
-
 .map-container:hover .map-image {
   transform: scale(1.02);
 }
 
-.device-icon.preview {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  color: #00eaff;
-  font-size: 22px;
-  filter: drop-shadow(0 0 8px #00eaff);
-  transition: all 0.3s ease;
+@keyframes pulseGlow {
+  0% { filter: drop-shadow(0 0 6px #00eaff); transform: translate(-50%, -50%) scale(1); }
+  50% { filter: drop-shadow(0 0 14px #00ffff); transform: translate(-50%, -50%) scale(1.1); }
+  100% { filter: drop-shadow(0 0 6px #00eaff); transform: translate(-50%, -50%) scale(1); }
 }
 
 /* === MODALE ELIMINAZIONE (effetto vetro + animazioni) === */
@@ -460,23 +462,6 @@
   transform: scale(1.03);
 }
 
-.map-container {
-  position: relative;
-  width: 100%;
-  max-width: 1600px;
-  margin: 0 auto;
-}
-
-.device-icon {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  font-size: 22px;
-  color: #00eaff;
-  filter: drop-shadow(0 0 8px #00eaff);
-  cursor: pointer;
-  transition: transform 0.2s, color 0.3s;
-}
-
 .device-icon.on {
   color: #00ff80;
   filter: drop-shadow(0 0 10px #00ff80);
@@ -485,35 +470,6 @@
 .device-icon:hover {
   transform: translate(-50%, -50%) scale(1.2);
 }
-
-.map-container {
-  position: relative;
-}
-
-.device-icon {
-  position: absolute;
-  transform: translate(-50%, -50%);
-}
-
-
-.map-container {
-  position: relative;
-  width: 100%;
-  max-width: 1600px;
-  margin: 0 auto;
-  aspect-ratio: 16 / 9;
-  /* 👈 mantiene proporzioni costanti */
-}
-
-.map-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-  border-radius: 12px;
-}
-
-
 
 /* === MESSAGGI INTERNI ALLA MODALE === */
 .message-wrapper {
@@ -566,8 +522,15 @@
 
 /* === Fade-out automatico (opzionale ma consigliato) === */
 @keyframes fadeOut {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-5px); }
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
 }
 
 .message.hide {
@@ -592,7 +555,7 @@
   flex: 0.8;
   transition: all 0.3s ease;
   background-image: linear-gradient(45deg, transparent 50%, #00eaff 50%),
-                    linear-gradient(135deg, #00eaff 50%, transparent 50%);
+    linear-gradient(135deg, #00eaff 50%, transparent 50%);
   background-position: calc(100% - 18px) center, calc(100% - 13px) center;
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
@@ -648,7 +611,7 @@
 
   /* 🔹 Freccia personalizzata */
   background-image: linear-gradient(45deg, transparent 50%, #00ffbf 50%),
-                    linear-gradient(135deg, #00ffbf 50%, transparent 50%);
+    linear-gradient(135deg, #00ffbf 50%, transparent 50%);
   background-position: calc(100% - 16px) center, calc(100% - 11px) center;
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
@@ -691,5 +654,147 @@
   border-radius: 10px;
   box-shadow: 0 0 25px rgba(0, 255, 191, 0.15);
   backdrop-filter: blur(10px);
+}
+
+/* Glow dinamico */
+.device-card.on::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  box-shadow: 0 0 25px rgba(0, 255, 170, 0.2);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* === ICONA DISPOSITIVO === */
+.device-icon {
+  background: rgba(0, 234, 255, 0.08);
+  border-radius: 50%;
+  padding: 6px;
+  font-size: 26px;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  /* 🔹 centra l’icona verticalmente */
+  text-align: center;
+  flex-shrink: 0;
+  color: #00eaff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.device-card.on .device-icon {
+  color: #00ff99;
+  filter: drop-shadow(0 0 8px #00ff99);
+}
+
+.device-card:hover .device-icon {
+  transform: scale(1.15);
+}
+
+/* === TITOLO === */
+.card-header-left h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #eaf9ff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  line-height: 1.2;
+}
+
+.device-card:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+/* 💡 glow pulsante per renderla più evidente */
+@keyframes pulseGlow {
+  0% { filter: drop-shadow(0 0 6px #00eaff); transform: translate(-50%, -50%) scale(1); }
+  50% { filter: drop-shadow(0 0 16px #00ffff); transform: translate(-50%, -50%) scale(1.1); }
+  100% { filter: drop-shadow(0 0 6px #00eaff); transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes fadeInPop {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* === MAPPA UNIFICATA CON HOME === */
+.map-container {
+  position: relative;
+  width: 100%;
+  max-width: 1600px;
+  height: 100%;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 25px rgba(0, 255, 191, 0.1);
+}
+
+.map-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;  /* 👈 identico alla Home */
+  border-radius: 12px;
+  user-select: none;
+}
+
+/* === ICONA PREVIEW === */
+.device-icon.preview {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  color: #00eaff;
+  font-size: 26px;
+  filter: drop-shadow(0 0 8px #00eaff);
+  z-index: 10;
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+.device-icon.preview i {
+  animation: pinGlow 2s ease-in-out infinite;
+}
+@keyframes pinGlow {
+  0%, 100% { filter: drop-shadow(0 0 6px #00eaff); }
+  50% { filter: drop-shadow(0 0 16px #00ffff); }
+}
+
+/* niente zoom quando posizioniamo i pin */
+.no-zoom .map-image { transform: none !important; }
+
+/* oppure rimuovi proprio questa regola dal CSS:
+.map-container:hover .map-image { transform: scale(1.02); }
+*/
+
+/* niente zoom quando si posiziona il pin */
+.no-zoom .map-image { transform: none !important; }
+
+/* se presente altrove: */
+/* .map-container:hover .map-image { transform: scale(1.02); } */
+
+
+.add-device-modal .map-container {
+  position: relative;
+  width: 100%;
+  height: 60vh;         /* o 65vh: a tua scelta, ma fissa un’altezza */
+  max-width: 1600px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 25px rgba(0, 255, 191, 0.1);
+}
+.add-device-modal .map-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;  /* identico alla Home */
+  display: block;
+  border-radius: 12px;
 }
 

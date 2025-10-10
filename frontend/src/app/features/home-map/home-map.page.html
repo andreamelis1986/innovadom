@@ -1,14 +1,9 @@
 <div class="dashboard-container">
   <!-- 🔹 SIDEBAR -->
   <aside class="sidebar">
-    <div
-      class="info-card"
-      *ngFor="let item of ['Luci','Temperatura','Energia','Telecamere']"
-    >
+    <div class="info-card" *ngFor="let item of ['Luci','Temperatura','Energia','Telecamere']">
       <div class="card-header">
-        <div
-          class="icon-container"
-          [style.background]="
+        <div class="icon-container" [style.background]="
             item === 'Luci'
               ? '#00bcd433'
               : item === 'Temperatura'
@@ -16,10 +11,8 @@
               : item === 'Energia'
               ? '#4caf5033'
               : '#2196f333'
-          "
-        >
-          <i
-            [class]="
+          ">
+          <i [class]="
               item === 'Luci'
                 ? 'fas fa-lightbulb'
                 : item === 'Temperatura'
@@ -27,8 +20,7 @@
                 : item === 'Energia'
                 ? 'fas fa-bolt'
                 : 'fas fa-video'
-            "
-            [style.color]="
+            " [style.color]="
               item === 'Luci'
                 ? '#00bcd4'
                 : item === 'Temperatura'
@@ -36,8 +28,7 @@
                 : item === 'Energia'
                 ? '#4caf50'
                 : '#2196f3'
-            "
-          ></i>
+            "></i>
         </div>
         <div class="title">{{ item }}</div>
         <div class="value" *ngIf="item === 'Luci'">{{ lightsOn() }} On</div>
@@ -54,11 +45,7 @@
         <div class="lights-row">
           <span class="label">Tutte le luci</span>
           <label class="switch" (click)="$event.stopPropagation()">
-            <input
-              type="checkbox"
-              [checked]="areAllLightsOn()"
-              (change)="toggleAllLights()"
-            />
+            <input type="checkbox" [checked]="areAllLightsOn()" (change)="toggleAllLights()" />
             <span class="slider"></span>
           </label>
         </div>
@@ -81,27 +68,17 @@
   <!-- 🔹 MAPPA -->
   <div class="map-wrapper">
     <div class="map-container">
-      <img
-        src="assets/planimetria_modern_5.png"
-        alt="Mappa"
-        class="map-image"
-      />
+      <img src="assets/planimetria_modern_5.png" alt="Mappa" class="map-image" />
 
       <div class="device-status" *ngIf="loadingDevice">
         <div class="spinner"></div>
-        <p>Verifica connessione...</p>
+        <p><i class="fas fa-satellite-dish"></i> Verifica connessione...</p>
       </div>
 
-      <div
-        *ngFor="let device of devices"
-        class="device-icon"
-        [class.on]="device.status === 'on'"
-        [ngClass]="device.icon"
-        [style.top.%]="device.top"
-        [style.left.%]="device.left"
-        [attr.data-tooltip]="device.name + ' (' + device.status + ')'"
-        (click)="handleDeviceClick(device)"
-      ></div>
+
+      <div *ngFor="let device of devices" class="device-icon" [class.on]="device.status === 'on'"
+        [ngClass]="device.icon" [style.top.%]="device.top" [style.left.%]="device.left"
+        [attr.data-tooltip]="device.name + ' (' + device.status + ')'" (click)="handleDeviceClick(device)"></div>
 
       <!-- Popup camera -->
       <div *ngIf="selectedCamera" class="camera-popup show">
@@ -112,12 +89,7 @@
           </button>
         </div>
         <div class="popup-content">
-          <canvas
-            #cameraCanvas
-            width="640"
-            height="480"
-            class="camera-stream"
-          ></canvas>
+          <canvas #cameraCanvas width="640" height="480" class="camera-stream"></canvas>
         </div>
       </div>
 
@@ -135,16 +107,9 @@
             <div class="shutter-value">
               {{ selectedShutter.shutter_position }}%
             </div>
-            <input
-              type="range"
-              orient="vertical"
-              min="0"
-              max="100"
-              step="1"
-              [ngModel]="selectedShutter.shutter_position"
-              (ngModelChange)="onShutterInput($event)"
-              (change)="setShutterPosition(selectedShutter)"
-            />
+            <input type="range" orient="vertical" min="0" max="100" step="1"
+              [ngModel]="selectedShutter.shutter_position" (ngModelChange)="onShutterInput($event)"
+              (change)="setShutterPosition(selectedShutter)" />
           </div>
           <div class="shutter-buttons">
             <button class="action-btn" (click)="openShutter(selectedShutter)">

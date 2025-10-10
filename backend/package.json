@@ -19,6 +19,7 @@
     "mysql2": "^3.15.2",
     "node-fetch": "^3.3.2",
     "node-rtsp-stream": "^0.0.9",
+    "ping": "^1.0.0",
     "server.js": "^1.0.0",
     "ws": "^8.18.3",
     "wsnode": "^1.0.2"

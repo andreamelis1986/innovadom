@@ -1,0 +1,99 @@
+/* === STRUTTURA BASE === */
+.devices-container {
+  padding: 30px;
+  color: #fff;
+  background: #1b1f25;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: #ffffffd9;
+}
+
+/* === GRIGLIA CARD === */
+.devices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+/* === CARD DISPOSITIVO === */
+.device-card {
+  background: rgba(30, 35, 45, 0.95);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.device-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* === HEADER === */
+.device-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.device-icon {
+  font-size: 32px;
+  transition: color 0.3s;
+}
+
+.device-type {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-top: -4px;
+}
+
+/* === BODY === */
+.status-label {
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.status-label span.on {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.status-label span.off {
+  color: #f44336;
+  font-weight: 600;
+}
+
+.device-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+mat-slider {
+  width: 100%;
+  --mdc-slider-handle-color: #2196f3;
+  --mdc-slider-active-track-color: #2196f3;
+}
+
+/* === NESSUN DISPOSITIVO === */
+.no-devices {
+  text-align: center;
+  margin-top: 100px;
+  opacity: 0.7;
+}
+
+.no-devices i {
+  font-size: 50px;
+  color: #777;
+  margin-bottom: 12px;
+}

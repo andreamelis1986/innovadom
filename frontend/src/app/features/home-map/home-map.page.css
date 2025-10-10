@@ -320,3 +320,8 @@ body {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+.device-status i {
+  color: #00bcd4;
+  margin-right: 6px;
+}
